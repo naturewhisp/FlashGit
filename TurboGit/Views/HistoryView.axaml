@@ -1,0 +1,31 @@
+<!-- TurboGit/Views/HistoryView.axaml -->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:TurboGit.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="TurboGit.Views.HistoryView">
+    <Design.DataContext>
+        <vm:HistoryViewModel/>
+    </Design.DataContext>
+
+    <!-- 
+      This ListBox MUST be replaced with a virtualized control for performance.
+      For now, it serves as a placeholder to display commit data.
+      The custom drawing of the graph will be applied to the template of this control.
+    -->
+    <ListBox ItemsSource="{Binding Commits}">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <Border BorderBrush="LightGray" BorderThickness="0,0,0,1" Padding="5">
+                    <Grid ColumnDefinitions="150,*,200">
+                        <TextBlock Grid.Column="0" Text="{Binding Author}" FontWeight="Bold"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Message}" Margin="10,0"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Sha, StringFormat='{}{0:s7}'}" FontFamily="monospace" HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+</UserControl>
