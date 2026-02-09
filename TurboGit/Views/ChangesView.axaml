@@ -13,27 +13,41 @@
     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,*,Auto,*" Margin="10">
         <!-- Unstaged Files -->
         <TextBlock Grid.Row="0" Grid.Column="0" Text="Unstaged Files" FontWeight="Bold"/>
-        <ListBox Grid.Row="1" Grid.Column="0" ItemsSource="{Binding UnstagedFiles}" Margin="0,5">
+        <ListBox Grid.Row="1" Grid.Column="0" ItemsSource="{Binding UnstagedFiles}" SelectedItem="{Binding SelectedFile}" Margin="0,5">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding FilePath}"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding FilePath}"/>
+                        <Button Grid.Column="1" Content="Stage" 
+                                Command="{Binding $parent[ListBox].DataContext.StageFileCommand}" 
+                                CommandParameter="{Binding}"
+                                Padding="8,2" FontSize="10"/>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
         <!-- Staged Files -->
         <TextBlock Grid.Row="2" Grid.Column="0" Text="Staged Files" FontWeight="Bold" Margin="0,10,0,0"/>
-        <ListBox Grid.Row="3" Grid.Column="0" ItemsSource="{Binding StagedFiles}" Margin="0,5">
+        <ListBox Grid.Row="3" Grid.Column="0" ItemsSource="{Binding StagedFiles}" SelectedItem="{Binding SelectedFile}" Margin="0,5">
              <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding FilePath}"/>
+                     <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding FilePath}"/>
+                        <Button Grid.Column="1" Content="Unstage" 
+                                Command="{Binding $parent[ListBox].DataContext.UnstageFileCommand}" 
+                                CommandParameter="{Binding}"
+                                Padding="8,2" FontSize="10"/>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <!-- Diff Viewer Placeholder -->
+        <!-- Diff Viewer -->
         <Border Grid.Column="1" Grid.RowSpan="4" BorderBrush="Gray" BorderThickness="1" Margin="10,0,0,0">
-            <TextBlock Text="Diff for selected file will be shown here." VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="Gray"/>
+            <ScrollViewer>
+                <TextBlock Text="{Binding DiffContent}" Margin="5" FontFamily="monospace"/>
+            </ScrollViewer>
         </Border>
     </Grid>
 </UserControl>

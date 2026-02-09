@@ -2,33 +2,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using LibGit2Sharp; // The core Git library
-using TurboGit.ViewModels; // To use the GitCommit and GitFileStatus models
+using LibGit2Sharp;
+using TurboGit.ViewModels;
 
 namespace TurboGit.Services
 {
-    /// <summary>
-    /// Defines the contract for a service that interacts with a Git repository.
-    /// All methods are asynchronous to ensure a non-blocking UI.
-    /// </summary>
     public interface IGitService
     {
         Task<IEnumerable<GitCommit>> GetCommitHistoryAsync(string repoPath, int limit = 100);
         Task<IEnumerable<GitFileStatus>> GetFileStatusAsync(string repoPath);
+        Task StageFileAsync(string repoPath, string filePath);
+        Task UnstageFileAsync(string repoPath, string filePath);
+        Task<string> GetFileDiffAsync(string repoPath, string filePath, bool staged);
     }
 
-    /// <summary>
-    /// A placeholder implementation of IGitService.
-    /// This service wraps LibGit2Sharp operations to be consumed by ViewModels.
-    /// In a real application, this would contain robust error handling and be registered for DI.
-    /// </summary>
     public class GitService : IGitService
     {
-        /// <summary>
-        /// Asynchronously retrieves the commit history.
-        /// Note: LibGit2Sharp is synchronous, so we wrap calls in Task.Run to offload from the UI thread.
-        /// </summary>
+        // ... (GetCommitHistoryAsync remains the same)
         public Task<IEnumerable<GitCommit>> GetCommitHistoryAsync(string repoPath, int limit = 100)
         {
             return Task.Run(() =>
@@ -48,16 +40,12 @@ namespace TurboGit.Services
                 }
                 catch (Exception ex)
                 {
-                    // Basic error handling. A real app should log this properly.
                     Console.WriteLine($"Error getting commit history: {ex.Message}");
                     return Enumerable.Empty<GitCommit>();
                 }
             });
         }
-
-        /// <summary>
-        /// Asynchronously retrieves the status of all files in the working directory and index.
-        /// </summary>
+        
         public Task<IEnumerable<GitFileStatus>> GetFileStatusAsync(string repoPath)
         {
             return Task.Run(() =>
@@ -67,22 +55,22 @@ namespace TurboGit.Services
                     using (var repo = new Repository(repoPath))
                     {
                         var statuses = new List<GitFileStatus>();
-                        var repoStatus = repo.RetrieveStatus();
-
-                        // Unstaged changes (working directory)
-                        var unstaged = repoStatus.Modified.Concat(repoStatus.Untracked).Concat(repoStatus.Missing);
-                        foreach(var item in unstaged)
+                        // This provides a comprehensive status of all files.
+                        foreach (var item in repo.RetrieveStatus(new StatusOptions()))
                         {
-                            statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = false, Status = item.State.ToString() });
+                             bool isStaged = item.State.HasFlag(FileStatus.Staged) || item.State.HasFlag(FileStatus.Added);
+                             
+                             // We show the file in the appropriate list.
+                             // A file can be both staged and modified in workdir, but we simplify for now.
+                             if(isStaged)
+                             {
+                                statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = true, Status = item.State.ToString() });
+                             }
+                             else // Includes workdir changes
+                             {
+                                statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = false, Status = item.State.ToString() });
+                             }
                         }
-
-                        // Staged changes (index)
-                        var staged = repoStatus.Staged.Concat(repoStatus.Added);
-                         foreach(var item in staged)
-                        {
-                            statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = true, Status = item.State.ToString() });
-                        }
-
                         return statuses;
                     }
                 }
@@ -90,6 +78,55 @@ namespace TurboGit.Services
                 {
                     Console.WriteLine($"Error getting file status: {ex.Message}");
                     return Enumerable.Empty<GitFileStatus>();
+                }
+            });
+        }
+
+        public Task StageFileAsync(string repoPath, string filePath)
+        {
+            return Task.Run(() =>
+            {
+                using (var repo = new Repository(repoPath))
+                {
+                    Commands.Stage(repo, filePath);
+                }
+            });
+        }
+
+        public Task UnstageFileAsync(string repoPath, string filePath)
+        {
+            return Task.Run(() =>
+            {
+                using (var repo = new Repository(repoPath))
+                {
+                    // Unstage is more complex; it means resetting the change from the index to HEAD.
+                    Commands.Unstage(repo, filePath);
+                }
+            });
+        }
+
+        public Task<string> GetFileDiffAsync(string repoPath, string filePath, bool staged)
+        {
+            return Task.Run(() =>
+            {
+                using (var repo = new Repository(repoPath))
+                {
+                    var compareOptions = new CompareOptions { ContextLines = 3, InterhunkLines = 1 };
+                    Patch patch;
+
+                    if (staged)
+                    {
+                        // Diff between the index (staged) and the HEAD commit
+                        var headCommit = repo.Head.Tip;
+                        patch = repo.Diff.Compare<Patch>(headCommit?.Tree, repo.Index, new[] { filePath }, null, compareOptions);
+                    }
+                    else
+                    {
+                        // Diff between the working directory and the index
+                        patch = repo.Diff.Compare<Patch>(repo.Index, DiffTargets.WorkingDirectory, new[] { filePath }, null, compareOptions);
+                    }
+
+                    return patch?.Content ?? "No changes.";
                 }
             });
         }

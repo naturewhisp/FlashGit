@@ -1,67 +1,86 @@
 // TurboGit/ViewModels/StagingViewModel.cs
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using TurboGit.Services; // Assuming a GitService exists for git operations
+using TurboGit.Services;
 
 namespace TurboGit.ViewModels
 {
-    /// <summary>
-    /// ViewModel for the staging area (ChangesView).
-    /// Manages unstaged and staged files, and handles staging operations.
-    /// </summary>
     public partial class StagingViewModel : ObservableObject
     {
         private readonly IGitService _gitService;
+        private string _currentRepoPath;
 
         [ObservableProperty]
         private ObservableCollection<GitFileStatus> _unstagedFiles;
 
         [ObservableProperty]
         private ObservableCollection<GitFileStatus> _stagedFiles;
+        
+        [ObservableProperty]
+        private GitFileStatus _selectedFile;
+
+        [ObservableProperty]
+        private string _diffContent;
 
         public StagingViewModel()
         {
-            // In a real DI scenario, IGitService would be injected.
             _gitService = new GitService();
             UnstagedFiles = new ObservableCollection<GitFileStatus>();
             StagedFiles = new ObservableCollection<GitFileStatus>();
         }
 
-        /// <summary>
-        /// Loads the file status for the given repository path.
-        /// This is designed to be called when the user selects a repository.
-        /// </summary>
-        /// <param name="repoPath">The file system path to the repository.</param>
         public async void LoadChanges(string repoPath)
         {
-            if (string.IsNullOrEmpty(repoPath)) return;
+            _currentRepoPath = repoPath;
+            if (string.IsNullOrEmpty(_currentRepoPath)) return;
 
-            // Clear previous state
+            await RefreshStatus();
+        }
+
+        private async Task RefreshStatus()
+        {
             UnstagedFiles.Clear();
             StagedFiles.Clear();
 
-            // All Git operations should be asynchronous to prevent UI freezes.
-            var statuses = await _gitService.GetFileStatusAsync(repoPath);
+            var statuses = await _gitService.GetFileStatusAsync(_currentRepoPath);
             foreach (var status in statuses)
             {
                 if (status.IsStaged)
-                {
                     StagedFiles.Add(status);
-                }
                 else
-                {
                     UnstagedFiles.Add(status);
-                }
             }
         }
-    }
 
-    // A model representing the status of a file.
-    public class GitFileStatus
-    {
-        public string FilePath { get; set; }
-        public bool IsStaged { get; set; }
-        public string Status { get; set; } // e.g., "Modified", "New", "Deleted"
+        [RelayCommand]
+        private async Task StageFile(GitFileStatus file)
+        {
+            if (file == null || string.IsNullOrEmpty(_currentRepoPath)) return;
+            await _gitService.StageFileAsync(_currentRepoPath, file.FilePath);
+            await RefreshStatus();
+        }
+
+        [RelayCommand]
+        private async Task UnstageFile(GitFileStatus file)
+        {
+            if (file == null || string.IsNullOrEmpty(_currentRepoPath)) return;
+            await _gitService.UnstageFileAsync(_currentRepoPath, file.FilePath);
+            await RefreshStatus();
+        }
+
+        // This method is called when the selected file changes.
+        async partial void OnSelectedFileChanged(GitFileStatus value)
+        {
+            if (value == null || string.IsNullOrEmpty(_currentRepoPath))
+            {
+                DiffContent = string.Empty;
+                return;
+            }
+
+            // Load the diff for the selected file.
+            DiffContent = await _gitService.GetFileDiffAsync(_currentRepoPath, value.FilePath, value.IsStaged);
+        }
     }
 }
