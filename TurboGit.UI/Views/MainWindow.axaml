@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:TurboGit.UI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+        x:Class="TurboGit.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="TurboGit"
+        Content="{Binding ContentViewModel}">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="250, *">
+        <!-- Sidebar for Repository List -->
+        <Border Grid.Column="0" Background="#2c3e50" Padding="10">
+            <StackPanel>
+                <TextBlock Text="Recent Repositories" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+                <ListBox ItemsSource="{Binding RecentRepos}" SelectedItem="{Binding SelectedRepo}" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" Foreground="White" Padding="5"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1" RowDefinitions="*, 2*, 2*">
+            <!-- Placeholder for Commit Graph -->
+            <Border Grid.Row="0" Background="#34495e" Margin="5">
+                <TextBlock Text="Commit Graph (Not Implemented)" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+            </Border>
+
+            <!-- Placeholder for Staging Area -->
+            <Border Grid.Row="1" Background="#34495e" Margin="5">
+                 <TextBlock Text="Staging Area (Not Implemented)" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+            </Border>
+
+            <!-- Placeholder for Commit Box -->
+            <Border Grid.Row="2" Background="#2c3e50" Margin="5">
+                 <TextBlock Text="Commit Box (Not Implemented)" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+            </Border>
+        </Grid>
+    </Grid>
+
+</Window>
