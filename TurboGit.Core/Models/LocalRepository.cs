@@ -1,1 +1,18 @@
-bmFtZXNwYWNlIFR1cmJvR2l0LkNvcmUuTW9kZWxzOwoKLy8vIDxzdW1tYXJ5PgogICAgLy8vIFJlcHJlc2VudHMgYSBHaXQgcmVwb3NpdG9yeSBtYW5hZ2VkIGJ5IHRoZSBhcHBsaWNhdGlvbi4KICAgIC8vLyBUaGlzIGlzIGEgc2ltcGxlIGRhdGEgbW9kZWwgZm9yIFVJIHNkaXNwbGF5IHB1cnBvc2VzLgogICAgLy8vIDwvc3VtbWFyeT4KcHVibGljIGNsYXNzIExvY2FsUmVwb3NpdG9yeQp7CiAgICAvLy8gPHN1bW1hcnk+CiAgICAvLy8gVGhlIGZyaWVuZGx5IG5hbWUgb2YgdGhlIHJlcG9zaXRvcnkgKGUuZy4sIHRoZSBmb2xkZXIgbmFtZSkuCiAgICAvLy8gPC9zdW1tYXJ5PgogICAgcHVibGljIHJlcXVpcmVkIHN0cmluZyBOYW1lIHsgZ2V0OyBzZXQ7IH0KCiAgICAvLy8gPHN1bW1hcnk+CiAgICAvLy8gVGhlIGZ1bGwsIGFic29sdXRlIHBhdGggdG8gdGhlIHJlcG9zaXRvcnkncyB3b3JraW5nIGRpcmVjdG9yeS4KICAgIC8vLyA8L3N1bW1hcnk+CiAgICBwdWJsaWMgcmVxdWlyZWQgc3RyaW5nIFBhdGggeyBnZXQ7IHNldDsgfQp9
+namespace TurboGit.Core.Models;
+
+/// <summary>
+    /// Represents a Git repository managed by the application.
+    /// This is a simple data model for UI sdisplay purposes.
+    /// </summary>
+public class LocalRepository
+{
+    /// <summary>
+    /// The friendly name of the repository (e.g., the folder name).
+    /// </summary>
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// The full, absolute path to the repository's working directory.
+    /// </summary>
+    public required string Path { get; set; }
+}

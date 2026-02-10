@@ -1,1 +1,58 @@
-dXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLk9iamVjdE1vZGVsOwp1c2luZyBTeXN0ZW0uUmVhY3RpdmU7CnVzaW5nIFJlYWN0aXZlVUc7CnVzaW5nIFR1cmJvR2l0LkNvcmUuTW9kZWxzOwoKbmFtZXNwYWNlIFR1cmJvR2l0LlZpZXdNb2RlbHM7CgpwdWJsaWMgY2xhc3MgTWFpblZpZXdNb2RlbCA6IFZpZXdNb2RlbEJhc2UKewogICAgcHJpdmF0ZSBMb2NhbFJlcG9zaXRvcnk/IF9zZWxlY3RlZFJlcG9zaXRvcnk7CgogICAgLy8gQSBjb2xsZWN0aW9uIHRvIGhvbGQgdGhlIHJlcG9zaXRvcnJpZXMgbGlzdGVkIGluIHRoZSBzaWRlYmFyLgogICAgcHVibGljIE9ic2VydmFibGVDb2xsZWN0aW9uPExvY2FsUmVwb3NpdG9yeT4gUmVwb3NpdG9yaWVzIHsgZ2V0OyB9CgogICAgLy8gQ29tbWFuZCB0byBoYW5kbGUgYWRkaW5nIGEgbmV3IHJlcG9zaXRvcnkuCiAgICAvLyBJbiBhIHJlYWwgYXBwLCB0aGlzIHdvdWxkIG9wZW4gYSBmaWxlIGRpYWxvZy4KICAgIHB1YmxpYyBSZWFjdGl2ZUNvbW1hbmQ8VW5pdCwgVW5pdD4gQWRkUmVwb3NpdG9yeUNvbW1hbmQgeyBnZXQ7IH0KICAgIAogICAgLy8gVGhlIGN1cnJlbnRseSBzZWxlY3RlZCByZXBvc2l0b3J5IGluIHRoZSBsaXN0LgogICAgcHVibGljIExvY2FsUmVwb3NpdG9yeT8gU2VsZWN0ZWRSZXBvc2l0b3J5CiAgICB7CiAgICAgICAgZ2V0ID0+IF9zZWxlY3RlZFJlcG9zaXRvcnk7CiAgICAgICAgc2V0ID0+IHRoaXMuUmFpc2VBbmRTZXRJZkNoYW5nZWQocmVmIF9zZWxlY3RlZFJlcG9zaXRvcnksIHZhbHVlKTsKICAgIH0KCiAgICAvLyBBIGhlbHBlciBwcm9wZXJ0eSB0byBkZXRlcm1pbmUgaWYgYSByZXBvc2l0b3J5IGlzIHNlbGVjdGVkLgogICAgcHVibGljIGJvb2wgSXNSZXBvc2l0b3J5U2VsZWN0ZWQgPT4gU2VsZWN0ZWRSZXBvc2l0b3J5ICE9IG51bGw7CgogICAgcHVibGljIE1haW5WaWV3TW9kZWwoKQogICAgewogICAgICAgIFJlcG9zaXRvcmllcyA9IG5ldyBPYnNlcnZhYmxlQ29sbGVjdGlvbjxMb2NhbFJlcG9zaXRvcnk+KCk7CiAgICAgICAgCiAgICAgICAgLy8gSW5pdGlhbGl6ZSB0aGUgY29tbWFuZC4gRm9yIG5vdywgaXQganVzdCBhZGRzIGEgZHVtbXkgcmVwb3NpdG9yeS4KICAgICAgICBBZGRSZXBvc2l0b3J5Q29tbWFuZCA9IFJlYWN0aXZlQ29tbWFuZC5DcmVhdGUoQWRkUmVwb3NpdG9yeSk7CgogICAgICAgIC8vIEZvciBkZW1vbnN0cmF0aW9uLCBsZXQncyBhZGQgc29tZSBzYW1wbGUgZGF0YS4KICAgICAgICBMb2FkUmVwb3NpdG9yaWVzKCk7CiAgICB9CgogICAgcHJpdmF0ZSB2b2lkIEFkZFJlcG9zaXRvcnkoKQogICAgewogICAgICAgIC8vIFRPRE86IEltcGxlbWVudCBVUzEgLSBPcGVuIGEgZm9sZGVyIGJyb3dzZXIgdG8gc2VsZWN0IGEgcmVwb3NpdG9yeS4KICAgICAgICAvLyBGb3Igbm93LCBhZGQgYSBwbGFjZWhvbGRlci4KICAgICAgICB2YXIgbmV3UmVwbyA9IG5ldyBMb2NhbFJlcG9zaXRvcnkKICAgICAgICB7CiAgICAgICAgICAgIE5hbWUgPSAiTmV3IER1bW15IFJlcG8iLAogICAgICAgICAgICBQYXRoID0gIi9wYXRoL3RvL25ldy9yZXBvIgogICAgICAgIH07CiAgICAgICAgUmVwb3NpdG9yaWVzLkFkZChuZXdSZXBvKTsKICAgIH0KCiAgICBwcml2YXRlIHZvaWQgTG9hZFJlcG9zdG9yaWVzKCkKICAgIHsKICAgICAgICAvLyBUT0RPOiBJbXBsZW1lbnQgVVMxIC0gTG9hZCBzYXZlZCByZXBvc2l0b3JpZXMgZnJvbSBjb25maWcuCiAgICAgICAgUmVwb3NpdG9yaWVzLkFkZChuZXcgTG9jYWxSZXBvc2l0b3J5IHsgTmFtZSA9ICJUdXJib0dpdCIsIFBhdGggPSAiQzovZGV2L1R1cmJvR2l0IiB9KTsKICAgICAgICBSZXBvc2l0b3JpZXMuQWRkKG5ldyBMb2NhbFJlcG9zaXRvcnkgeyBOYW1lID0gIkF2YWxvbmlhVUEiLCBQYXRoID0gIkM6L2Rldi9BdmFsb25pYVVJIiB9KTsKICAgIH0KfQ==
+using System.Collections.ObjectModel;
+using System.Reactive;
+using ReactiveUI;
+using TurboGit.Core.Models;
+
+namespace TurboGit.ViewModels;
+
+public class MainViewModel : ViewModelBase
+{
+    private LocalRepository? _selectedRepository;
+
+    // A collection to hold the repositories listed in the sidebar.
+    public ObservableCollection<LocalRepository> Repositories { get; }
+
+    // Command to handle adding a new repository.
+    // In a real app, this would open a file dialog.
+    public ReactiveCommand<Unit, Unit> AddRepositoryCommand { get; }
+
+    // The currently selected repository in the list.
+    public LocalRepository? SelectedRepository
+    {
+        get => _selectedRepository;
+        set => this.RaiseAndSetIfChanged(ref _selectedRepository, value);
+    }
+
+    // A helper property to determine if a repository is selected.
+    public bool IsRepositorySelected => SelectedRepository != null;
+
+    public MainViewModel()
+    {
+        Repositories = new ObservableCollection<LocalRepository>();
+
+        // Initialize the command. For now, it just adds a dummy repository.
+        AddRepositoryCommand = ReactiveCommand.Create(AddRepository);
+
+        // For demonstration, let's add some sample data.
+        LoadRepositories();
+    }
+
+    private void AddRepository()
+    {
+        // TODO: Implement US1 - Open a folder browser to select a repository.
+        // For now, add a placeholder.
+        var newRepo = new LocalRepository
+        {
+            Name = "New Dummy Repo",
+            Path = "/path/to/new/repo"
+        };
+        Repositories.Add(newRepo);
+    }
+
+    private void LoadRepositories()
+    {
+        // TODO: Implement US1 - Load saved repositories from config.
+        Repositories.Add(new LocalRepository { Name = "TurboGit", Path = "C:/dev/TurboGit" });
+        Repositories.Add(new LocalRepository { Name = "AvaloniaUI", Path = "C:/dev/AvaloniaUI" });
+    }
+}

@@ -1,1 +1,7 @@
-dXNpbmcgUmVhY3RpdmVVSTsKCm5hbWVzcGFjZSBVcmJvR2l0LlZpZXdNb2RlbHM7CgpwdWJsaWMgY2xhc3MgVmlld01vZGVsQmFzZSA6IFJlYWN0aXZlT2JqZWN0CnsKfQ==
+using ReactiveUI;
+
+namespace TurboGit.ViewModels;
+
+public class ViewModelBase : ReactiveObject
+{
+}
