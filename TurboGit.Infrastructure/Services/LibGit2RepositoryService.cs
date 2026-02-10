@@ -1,4 +1,5 @@
 using LibGit2Sharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,17 +20,29 @@ public class LibGit2RepositoryService : IRepositoryService
     /// <returns>A RepositoryInfo object.</returns>
     public RepositoryInfo OpenRepository(string path)
     {
+        if (!Directory.Exists(path))
+        {
+            throw new DirectoryNotFoundException($"Directory not found: {path}");
+        }
+
         if (!Repository.IsValid(path))
         {
-            throw new DirectoryNotFoundException("The specified path is not a valid Git repository.");
+            throw new ArgumentException("The specified path is not a valid Git repository.", nameof(path));
         }
 
         using (var repo = new Repository(path))
         {
+            // For bare repositories, WorkingDirectory is null.
+            // In that case, we use the path to the repository directory itself (repo.Info.Path).
+            var workingDir = repo.Info.WorkingDirectory;
+            var repoPath = workingDir ?? repo.Info.Path;
+            // DirectoryInfo handles trailing separators correctly.
+            var repoName = new DirectoryInfo(repoPath).Name;
+
             return new RepositoryInfo
             {
-                Name = new DirectoryInfo(repo.Info.WorkingDirectory).Name,
-                Path = repo.Info.WorkingDirectory
+                Name = repoName,
+                Path = repoPath
             };
         }
     }
@@ -52,21 +65,22 @@ public class LibGit2RepositoryService : IRepositoryService
     }
 
     /// <summary>
-    /// Fetches from the 'origin' remote.
+    /// Fetches from the specified remote.
     /// Note: This is a simplified fetch and does not include credentials.
     /// </summary>
     /// <param name="repoPath">The path to the repository.</param>
-    public void Fetch(string repoPath)
+    /// <param name="remoteName">The name of the remote to fetch from.</param>
+    public void Fetch(string repoPath, string remoteName = "origin")
     {
         using (var repo = new Repository(repoPath))
         {
-            var remote = repo.Network.Remotes["origin"];
+            var remote = repo.Network.Remotes[remoteName];
             if (remote != null)
             {
                 // For simplicity, this example doesn't handle credentials.
                 // A real implementation would require a CredentialsProvider.
                 var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-                Commands.Fetch(repo, remote.Name, refSpecs, null, "Fetching from origin");
+                Commands.Fetch(repo, remote.Name, refSpecs, null, $"Fetching from {remote.Name}");
             }
         }
     }

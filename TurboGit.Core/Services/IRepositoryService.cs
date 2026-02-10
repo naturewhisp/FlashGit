@@ -26,5 +26,6 @@ public interface IRepositoryService
     /// Fetches the latest changes from the remote.
     /// </summary>
     /// <param name="repoPath">The path to the repository.</param>
-    void Fetch(string repoPath);
+    /// <param name="remoteName">The name of the remote to fetch from. Defaults to "origin".</param>
+    void Fetch(string repoPath, string remoteName = "origin");
 }
