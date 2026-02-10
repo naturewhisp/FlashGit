@@ -32,10 +32,17 @@ public class LibGit2RepositoryService : IRepositoryService
 
         using (var repo = new Repository(path))
         {
+            // For bare repositories, WorkingDirectory is null.
+            // In that case, we use the path to the repository directory itself (repo.Info.Path).
+            var workingDir = repo.Info.WorkingDirectory;
+            var repoPath = workingDir ?? repo.Info.Path;
+            // DirectoryInfo handles trailing separators correctly.
+            var repoName = new DirectoryInfo(repoPath).Name;
+
             return new RepositoryInfo
             {
-                Name = new DirectoryInfo(repo.Info.WorkingDirectory).Name,
-                Path = repo.Info.WorkingDirectory
+                Name = repoName,
+                Path = repoPath
             };
         }
     }
