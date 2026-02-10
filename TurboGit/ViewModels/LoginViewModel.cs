@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reactive;
 using System.Threading.Tasks;
+using TurboGit.Infrastructure;
 using TurboGit.Services;
 
 namespace TurboGit.ViewModels
@@ -49,7 +50,7 @@ namespace TurboGit.ViewModels
             {
                 using (var listener = new HttpListener())
                 {
-                    listener.Prefixes.Add("http://localhost:8989/callback/");
+                    listener.Prefixes.Add(Constants.GitHubOAuthCallbackUrl);
                     listener.Start();
 
                     // Asynchronously wait for one request

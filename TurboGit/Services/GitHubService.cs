@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Octokit;
+using TurboGit.Infrastructure;
 using TurboGit.Infrastructure.Security;
 
 namespace TurboGit.Services
@@ -29,7 +30,7 @@ namespace TurboGit.Services
             var request = new OauthLoginRequest(ClientId)
             {
                 Scopes = { "repo", "user" }, // Request access to repositories and user profile
-                RedirectUri = new Uri("http://localhost:8989/callback") // Local listener for the callback
+                RedirectUri = new Uri(Constants.GitHubOAuthCallbackUrl) // Local listener for the callback
             };
             return _client.Oauth.GetGitHubLoginUrl(request).ToString();
         }
