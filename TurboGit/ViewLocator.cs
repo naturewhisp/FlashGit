@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using TurboGit.ViewModels;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace TurboGit
 {
@@ -22,7 +22,7 @@ namespace TurboGit
 
         public bool Match(object data)
         {
-            return data is ViewModelBase;
+            return data is ObservableObject;
         }
     }
 }

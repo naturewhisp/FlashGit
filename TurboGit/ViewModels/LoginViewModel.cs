@@ -1,38 +1,31 @@
 // ViewModels/LoginViewModel.cs
 
-using ReactiveUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Diagnostics;
 using System.Net;
-using System.Reactive;
 using System.Threading.Tasks;
 using TurboGit.Infrastructure;
 using TurboGit.Services;
 
 namespace TurboGit.ViewModels
 {
-    public class LoginViewModel : ViewModelBase
+    public partial class LoginViewModel : ObservableObject
     {
         private readonly IGitHubService _gitHubService;
+
+        [ObservableProperty]
         private string _statusMessage;
-
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
-        }
-
-        public ReactiveCommand<Unit, Unit> LoginCommand { get; }
 
         public LoginViewModel(IGitHubService gitHubService)
         {
             _gitHubService = gitHubService;
             StatusMessage = "Please log in with GitHub to continue.";
-
-            LoginCommand = ReactiveCommand.CreateFromTask(ExecuteLogin);
         }
 
-        private async Task ExecuteLogin()
+        [RelayCommand]
+        private async Task Login()
         {
             StatusMessage = "Waiting for GitHub authentication...";
             string authUrl = _gitHubService.GetGitHubLoginUrl();
