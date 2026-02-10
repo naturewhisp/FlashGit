@@ -11,10 +11,10 @@ namespace TurboGit.Services
     /// </summary>
     public class GitHubService : IGitHubService
     {
-        // IMPORTANT: These are placeholders. In a real application, these should be stored securely
-        // and not hardcoded. For this example, we'll use placeholders.
-        private const string ClientId = "YOUR_CLIENT_ID"; // Replace with your GitHub OAuth App Client ID
-        private const string ClientSecret = "YOUR_CLIENT_SECRET"; // Replace with your GitHub OAuth App Client Secret
+        // IMPORTANT: In a real application, these should be stored securely
+        // and not hardcoded. For this example, we'll retrieve them from environment variables.
+        private static string ClientId => Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID") ?? "YOUR_CLIENT_ID";
+        private static string ClientSecret => Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET") ?? "YOUR_CLIENT_SECRET";
 
         private readonly GitHubClient _client = new GitHubClient(new ProductHeaderValue("TurboGit"));
 

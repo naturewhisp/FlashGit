@@ -60,7 +60,7 @@ namespace TurboGit.Infrastructure.Security
             }
         }
 
-        //- <summary>
+        /// <summary>
         /// Retrieves the authentication token from local storage.
         /// </summary>
         /// <returns>The decrypted token, or null if it doesn't exist or fails to decrypt</returns>

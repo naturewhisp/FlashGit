@@ -13,9 +13,9 @@ namespace TurboGit.Infrastructure.Services
     public class GitHubAuthService
     {
         // IMPORTANT: In a real application, these should NOT be hardcoded.
-        // They should be stored in a secure configuration file or retrieved from a server.
-        private readonly string _clientId = "YOUR_CLIENT_ID"; // Replace with your GitHub App Client ID
-        private readonly string _clientSecret = "YOUR_CLIENT_SECRET"; // Replace with your GitHub App Client Secret
+        // They should be stored in a secure configuration file or retrieved from environment variables.
+        private readonly string _clientId = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID") ?? "YOUR_CLIENT_ID";
+        private readonly string _clientSecret = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET") ?? "YOUR_CLIENT_SECRET";
         private readonly HttpClient _httpClient;
 
         public GitHubAuthService()

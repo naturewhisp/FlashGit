@@ -11,8 +11,8 @@ namespace TurboGit.Services
     {
         // ATTENZIONE: Questi valori devono essere gestiti tramite configurazione sicura,
         // non hardcoded nel codice sorgente in produzione.
-        private const string ClientId = "YOUR_CLIENT_ID"; // Sostituire con il proprio Client ID
-        private const string ClientSecret = "YOUR_CLIENT_SECRET"; // Sostituire con il proprio Client Secret
+        private static string ClientId => Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID") ?? "YOUR_CLIENT_ID";
+        private static string ClientSecret => Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET") ?? "YOUR_CLIENT_SECRET";
 
         private readonly GitHubClient _client;
         private readonly ICredentialStorage _credentialStorage;
