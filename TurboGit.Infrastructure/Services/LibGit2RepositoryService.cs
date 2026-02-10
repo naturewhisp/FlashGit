@@ -67,7 +67,7 @@ public class LibGit2RepositoryService : IRepositoryService
                 // For simplicity, this example doesn't handle credentials.
                 // A real implementation would require a CredentialsProvider.
                 var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-                Commands.Fetch(repo, remote.Name, refSpecs, null, $"Fetching from {remoteName}");
+                Commands.Fetch(repo, remote.Name, refSpecs, null, $"Fetching from {remote.Name}");
             }
         }
     }
