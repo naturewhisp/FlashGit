@@ -1,4 +1,5 @@
 using LibGit2Sharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,9 +20,14 @@ public class LibGit2RepositoryService : IRepositoryService
     /// <returns>A RepositoryInfo object.</returns>
     public RepositoryInfo OpenRepository(string path)
     {
+        if (!Directory.Exists(path))
+        {
+            throw new DirectoryNotFoundException($"Directory not found: {path}");
+        }
+
         if (!Repository.IsValid(path))
         {
-            throw new DirectoryNotFoundException("The specified path is not a valid Git repository.");
+            throw new ArgumentException("The specified path is not a valid Git repository.", nameof(path));
         }
 
         using (var repo = new Repository(path))
