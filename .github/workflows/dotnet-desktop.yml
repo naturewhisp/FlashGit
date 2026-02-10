@@ -1,4 +1,5 @@
-# This workflow will build and test the TurboGit desktop application.
+# This workflow will build and test a .NET Desktop application
+# built on .NET 8.0.
 
 name: .NET Core Desktop
 
