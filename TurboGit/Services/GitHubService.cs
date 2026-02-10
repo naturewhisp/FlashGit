@@ -29,7 +29,7 @@ namespace TurboGit.Services
             var request = new OauthLoginRequest(ClientId)
             {
                 Scopes = { "repo", "user" }, // Request access to repositories and user profile
-                RedirectUri = new Uri("http://localhost:8989/callback") // Local listener for the callback
+                RedirectUri = new Uri("http://localhost:8989/callback/") // Local listener for the callback
             };
             return _client.Oauth.GetGitHubLoginUrl(request).ToString();
         }
