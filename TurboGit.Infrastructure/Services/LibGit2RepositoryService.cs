@@ -65,21 +65,22 @@ public class LibGit2RepositoryService : IRepositoryService
     }
 
     /// <summary>
-    /// Fetches from the 'origin' remote.
+    /// Fetches from the specified remote.
     /// Note: This is a simplified fetch and does not include credentials.
     /// </summary>
     /// <param name="repoPath">The path to the repository.</param>
-    public void Fetch(string repoPath)
+    /// <param name="remoteName">The name of the remote to fetch from.</param>
+    public void Fetch(string repoPath, string remoteName = "origin")
     {
         using (var repo = new Repository(repoPath))
         {
-            var remote = repo.Network.Remotes["origin"];
+            var remote = repo.Network.Remotes[remoteName];
             if (remote != null)
             {
                 // For simplicity, this example doesn't handle credentials.
                 // A real implementation would require a CredentialsProvider.
                 var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
-                Commands.Fetch(repo, remote.Name, refSpecs, null, "Fetching from origin");
+                Commands.Fetch(repo, remote.Name, refSpecs, null, $"Fetching from {remote.Name}");
             }
         }
     }
