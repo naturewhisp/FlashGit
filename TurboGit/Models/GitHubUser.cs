@@ -7,9 +7,9 @@ namespace TurboGit.Models
     /// </summary>
     public class GitHubUser
     {
-        public string Login { get; set; }
+        public required string Login { get; set; }
         public long Id { get; set; }
-        public string AvatarUrl { get; set; }
-        public string Name { get; set; }
+        public required string AvatarUrl { get; set; }
+        public required string Name { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using TurboGit.Services;
 
 namespace TurboGit.ViewModels
@@ -15,6 +16,8 @@ namespace TurboGit.ViewModels
     public partial class ConflictResolutionViewModel : ObservableObject
     {
         private readonly IAiResolverService _aiResolver;
+        private string _preConflictContent;
+        private string _postConflictContent;
         
         [ObservableProperty]
         private string _filePath;
@@ -32,6 +35,9 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsResolved))]
         private string _resolvedContent;
+
+        [ObservableProperty]
+        private string _errorMessage;
 
         public bool IsNotBusy => !IsBusy;
         public bool IsResolved => !string.IsNullOrEmpty(ResolvedContent) && !IsBusy;
@@ -62,60 +68,123 @@ namespace TurboGit.ViewModels
 
         private void ParseConflictedContent(string content)
         {
-            var current = new StringBuilder();
-            var incoming = new StringBuilder();
-            var activeBuilder = new StringBuilder(); // A temporary builder
+            var preBuilder = new StringBuilder();
+            var currentBuilder = new StringBuilder();
+            var incomingBuilder = new StringBuilder();
+            var postBuilder = new StringBuilder();
 
             var lines = content.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             
+            // simple state machine
+            // 0: pre-conflict
+            // 1: inside current (HEAD)
+            // 2: inside incoming
+            // 3: post-conflict (after first conflict)
+            int state = 0;
+
             foreach (var line in lines)
             {
-                if (line.StartsWith("<<<<<<<"))
+                if (state == 0)
                 {
-                    activeBuilder = current; // Start capturing current changes
+                    if (line.StartsWith("<<<<<<<"))
+                    {
+                        state = 1;
+                    }
+                    else
+                    {
+                        preBuilder.AppendLine(line);
+                    }
                 }
-                else if (line.StartsWith("======="))
+                else if (state == 1)
                 {
-                    activeBuilder = incoming; // Switch to capturing incoming changes
+                    if (line.StartsWith("======="))
+                    {
+                        state = 2;
+                    }
+                    else
+                    {
+                        currentBuilder.AppendLine(line);
+                    }
                 }
-                else if (line.StartsWith(">>>>>>>"))
+                else if (state == 2)
                 {
-                    activeBuilder = new StringBuilder(); // Stop capturing
+                    if (line.StartsWith(">>>>>>>"))
+                    {
+                        state = 3;
+                    }
+                    else
+                    {
+                        incomingBuilder.AppendLine(line);
+                    }
                 }
-                else
+                else if (state == 3)
                 {
-                    activeBuilder.AppendLine(line);
+                    postBuilder.AppendLine(line);
                 }
             }
 
-            CurrentChanges = current.ToString();
-            IncomingChanges = incoming.ToString();
+            _preConflictContent = preBuilder.ToString();
+            CurrentChanges = currentBuilder.ToString();
+            IncomingChanges = incomingBuilder.ToString();
+            _postConflictContent = postBuilder.ToString();
         }
 
         [RelayCommand]
         private async Task ResolveWithAi()
         {
             IsBusy = true;
+            ErrorMessage = string.Empty;
             ResolvedContent = string.Empty;
 
-            var fullConflictText = $"<<<<<<< HEAD\n{CurrentChanges}=======\n{IncomingChanges}>>>>>>> INCOMING";
-            
-            // Assume file extension gives language hint. e.g., "main.cs" -> "csharp"
-            var languageHint = System.IO.Path.GetExtension(FilePath).TrimStart('.');
+            try
+            {
+                var fullConflictText = $"<<<<<<< HEAD\n{CurrentChanges}=======\n{IncomingChanges}>>>>>>> INCOMING";
 
-            ResolvedContent = await _aiResolver.ResolveConflictAsync(fullConflictText, languageHint);
-            
-            IsBusy = false;
+                // Assume file extension gives language hint. e.g., "main.cs" -> "csharp"
+                var languageHint = System.IO.Path.GetExtension(FilePath).TrimStart('.');
+
+                ResolvedContent = await _aiResolver.ResolveConflictAsync(fullConflictText, languageHint);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"AI Resolution Failed: {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         [RelayCommand]
         private void AcceptSolution()
         {
-            // In a real implementation, this method would:
-            // 1. Write the content of `ResolvedContent` back to the file on disk.
-            // 2. Use LibGit2Sharp to `git add` the file, marking the conflict as resolved.
-            // 3. Close the dialog window.
-            Console.WriteLine($"Conflict for {FilePath} resolved. New content would be saved.");
+            try
+            {
+                if (string.IsNullOrEmpty(FilePath)) return;
+
+                // Reconstruct the file content
+                // Note: ResolvedContent should not include markers.
+                // We use TrimEnd on PreConflictContent because AppendLine adds a newline that might not be needed if Pre was empty?
+                // Actually, ParseConflictedContent adds AppendLine for every line.
+                // So _preConflictContent has a trailing newline.
+                // _postConflictContent has a trailing newline.
+                // _resolvedContent comes from AI, might or might not have newline.
+
+                // Simplistic reconstruction:
+                var newContent = _preConflictContent + ResolvedContent + _postConflictContent;
+
+                // Write to file
+                File.WriteAllText(FilePath, newContent);
+
+                Console.WriteLine($"Conflict for {FilePath} resolved and saved.");
+
+                // Reset/Clear? Or Close View?
+                // In a real VM, we might request Close via an event or service.
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to save solution: {ex.Message}";
+            }
         }
     }
 }

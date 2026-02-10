@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using LibGit2Sharp;
+using TurboGit.Core.Models;
 using TurboGit.ViewModels;
 
 namespace TurboGit.Services
@@ -20,7 +20,6 @@ namespace TurboGit.Services
 
     public class GitService : IGitService
     {
-        // ... (GetCommitHistoryAsync remains the same)
         public Task<IEnumerable<GitCommit>> GetCommitHistoryAsync(string repoPath, int limit = 100)
         {
             return Task.Run(() =>
@@ -29,7 +28,7 @@ namespace TurboGit.Services
                 {
                     using (var repo = new Repository(repoPath))
                     {
-                        return repo.Commits.Take(limit).Select(c => new GitCommit
+                        return (IEnumerable<GitCommit>)repo.Commits.Take(limit).Select(c => new GitCommit
                         {
                             Sha = c.Sha,
                             Message = c.MessageShort,
@@ -55,23 +54,24 @@ namespace TurboGit.Services
                     using (var repo = new Repository(repoPath))
                     {
                         var statuses = new List<GitFileStatus>();
-                        // This provides a comprehensive status of all files.
                         foreach (var item in repo.RetrieveStatus(new StatusOptions()))
                         {
-                             bool isStaged = item.State.HasFlag(FileStatus.Staged) || item.State.HasFlag(FileStatus.Added);
+                             bool isStaged = item.State.HasFlag(FileStatus.NewInIndex) ||
+                                             item.State.HasFlag(FileStatus.ModifiedInIndex) ||
+                                             item.State.HasFlag(FileStatus.DeletedFromIndex) ||
+                                             item.State.HasFlag(FileStatus.RenamedInIndex) ||
+                                             item.State.HasFlag(FileStatus.TypeChangeInIndex);
 
-                             // We show the file in the appropriate list.
-                             // A file can be both staged and modified in workdir, but we simplify for now.
                              if(isStaged)
                              {
                                 statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = true, Status = item.State.ToString() });
                              }
-                             else // Includes workdir changes
+                             else
                              {
                                 statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = false, Status = item.State.ToString() });
                              }
                         }
-                        return statuses;
+                        return (IEnumerable<GitFileStatus>)statuses;
                     }
                 }
                 catch (Exception ex)
@@ -99,7 +99,6 @@ namespace TurboGit.Services
             {
                 using (var repo = new Repository(repoPath))
                 {
-                    // Unstage is more complex; it means resetting the change from the index to HEAD.
                     Commands.Unstage(repo, filePath);
                 }
             });
@@ -116,14 +115,26 @@ namespace TurboGit.Services
 
                     if (staged)
                     {
-                        // Diff between the index (staged) and the HEAD commit
+                        // Staged changes: Diff between HEAD Tree and Index
                         var headCommit = repo.Head.Tip;
-                        patch = repo.Diff.Compare<Patch>(headCommit?.Tree, repo.Index, new[] { filePath }, null, compareOptions);
+                        if (headCommit != null)
+                        {
+                             patch = repo.Diff.Compare<Patch>(headCommit.Tree, DiffTargets.Index, new[] { filePath }, null, compareOptions);
+                        }
+                        else
+                        {
+                             // Initial commit scenario (no HEAD), compare empty tree (or just use index for new files)
+                             // For simplicity, handle new files in empty repo if needed, but usually HEAD exists or we compare against empty.
+                             // LibGit2Sharp might throw if Head is null.
+                             patch = null; // Fallback
+                        }
                     }
                     else
                     {
-                        // Diff between the working directory and the index
-                        patch = repo.Diff.Compare<Patch>(repo.Index, DiffTargets.WorkingDirectory, new[] { filePath }, null, compareOptions);
+                        // Unstaged changes: Diff between Index and Working Directory
+                        patch = repo.Diff.Compare<Patch>(new[] { filePath }, true, null, compareOptions);
+                        // Note: overload might be (IEnumerable<string>, bool includeUntracked, ...)
+                        // checking overload: Compare<Patch>(IEnumerable<string> paths = null, bool includeUntracked = false, ...)
                     }
 
                     return patch?.Content ?? "No changes.";

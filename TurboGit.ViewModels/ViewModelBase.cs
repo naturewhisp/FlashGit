@@ -1,6 +1,6 @@
 using ReactiveUI;
 
-namespace UrboGit.ViewModels;
+namespace TurboGit.ViewModels;
 
 public class ViewModelBase : ReactiveObject
 {

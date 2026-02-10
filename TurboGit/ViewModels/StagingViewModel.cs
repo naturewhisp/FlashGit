@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using TurboGit.Core.Models;
 using TurboGit.Services;
 
 namespace TurboGit.ViewModels

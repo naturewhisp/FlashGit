@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
-using ReactiveUG;
+using ReactiveUI;
 using TurboGit.Core.Models;
 
 namespace TurboGit.ViewModels;
