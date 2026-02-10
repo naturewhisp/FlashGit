@@ -21,7 +21,7 @@
         <!-- Action Buttons -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button Content="Resolve with AI" Command="{Binding ResolveWithAiCommand}" IsEnabled="{Binding IsNotBusy}" Padding="10,5" Margin="0,0,10,0"/>
-            <Button Content="Accept & Mark as Resolved" Command="{Binding AcceptSolutionCommand}" IsEnabled="{Binding IsResolved}" Padding="10,5" Background="DarkGreen"/>
+            <Button Content="Accept &amp; Mark as Resolved" Command="{Binding AcceptSolutionCommand}" IsEnabled="{Binding IsResolved}" Padding="10,5" Background="DarkGreen"/>
             <Button Content="Cancel" Click="OnCancelClicked" Padding="10,5" Margin="10,0,0,0"/>
         </StackPanel>
 

@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TurboGit.ViewModels; // Using GitCommit model
 
 namespace TurboGit.Controls
@@ -80,16 +81,17 @@ namespace TurboGit.Controls
                 context.DrawEllipse(dotFill, pen, dotCenter, dotRadius, dotRadius);
 
                 // --- 3. Draw Commit Message and Author ---
+                // Corrected FormattedText constructor for Avalonia 11
                 var formattedText = new FormattedText(
                     $"{item.Sha.Substring(0, 7)} - {item.Message} ({item.Author})",
+                    CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
                     Typeface.Default,
                     12,
-                    TextAlignment.Left,
-                    TextWrapping.NoWrap,
-                    Size.Infinity
+                    textBrush
                 );
 
-                context.DrawText(textBrush, new Point(graphColumnWidth + 10, y - formattedText.Height / 2), formattedText);
+                context.DrawText(formattedText, new Point(graphColumnWidth + 10, y - formattedText.Height / 2));
 
                 currentIndex++;
             }

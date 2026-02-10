@@ -1,4 +1,3 @@
-// TurboGit/Services/GitHubCopilotResolver.cs
 using System;
 using System.Net.Http;
 using System.Text;
@@ -15,33 +14,57 @@ namespace TurboGit.Services
         private readonly AiServiceConfig _config;
         private readonly HttpClient _httpClient;
 
+        public string Name => "GitHub Copilot";
+
         public GitHubCopilotResolver(AiServiceConfig config)
         {
             _config = config;
             _httpClient = new HttpClient();
             // Copilot auth is typically more complex, often using a GitHub token.
+            // _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _config.ApiKey);
         }
 
         public async Task<string> ResolveConflictAsync(string conflictedContent, string languageHint)
         {
             if (string.IsNullOrEmpty(_config?.ApiKey))
             {
-                return "Error: GitHub Copilot API Key/Token is not configured.";
+                throw new InvalidOperationException("GitHub Copilot API Key/Token is not configured.");
             }
 
-            var prompt = BuildPrompt(conflictedContent, languageHint);
+            try
+            {
+                var prompt = BuildPrompt(conflictedContent, languageHint);
 
-            Console.WriteLine($"--- Sending to GitHub Copilot ---\n{prompt}");
+                Console.WriteLine($"--- Sending to GitHub Copilot (Simulated) ---\n{prompt}");
 
-            // Simulate API call and response, similar to GeminiProResolver.
+                // Simulate API call and potential errors
+                await SimulateApiCallAsync();
+
+                // Since we don't have a real endpoint, we return a simulated success response.
+                return SimulateResponse(conflictedContent);
+            }
+            catch (TaskCanceledException)
+            {
+                throw new TimeoutException("The request to GitHub Copilot timed out.");
+            }
+            catch (Exception ex)
+            {
+                // In a real implementation, we would catch specific HttpRequestExceptions
+                throw new Exception($"GitHub Copilot error: {ex.Message}", ex);
+            }
+        }
+
+        private async Task SimulateApiCallAsync()
+        {
+            // Simulate network latency
             await Task.Delay(500);
-            return SimulateResponse(conflictedContent);
+
+            // Simulate random error (optional, for testing robustness)
+            // if (new Random().Next(0, 10) == 0) throw new HttpRequestException("Simulated network error");
         }
 
         private string BuildPrompt(string content, string language)
         {
-            // The prompt engineering might be slightly different for different models,
-            // but the core request remains the same.
             var sb = new StringBuilder();
             sb.AppendLine($"Task: Resolve the Git merge conflict in the following {language} code.");
             sb.AppendLine("Combine the changes to create a functional and correct code block.");
@@ -55,10 +78,22 @@ namespace TurboGit.Services
         private string SimulateResponse(string originalContent)
         {
             // A simple simulation for demonstration.
-            return originalContent
-                .Replace("<<<<<<< HEAD", "// --- Current Change ---")
-                .Replace("=======", "// --- Incoming Change ---")
-                .Replace(">>>>>>> some-other-branch", "// --- End of Conflict ---");
+            // It tries to find conflict markers and just pick the HEAD change + incoming change combined,
+            // or just placeholders to show it worked.
+
+            var sb = new StringBuilder();
+            var lines = originalContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("<<<<<<<") || line.StartsWith("=======") || line.StartsWith(">>>>>>>"))
+                {
+                    continue; // Skip markers
+                }
+                sb.AppendLine(line);
+            }
+
+            return sb.ToString();
         }
     }
 }

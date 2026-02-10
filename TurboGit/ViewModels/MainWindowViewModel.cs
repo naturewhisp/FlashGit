@@ -1,7 +1,8 @@
 // TurboGit/ViewModels/MainWindowViewModel.cs
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using TurboGit.Models; // Assuming a Repository model exists
+using TurboGit.Core.Models; // Assuming LocalRepository model exists
 
 namespace TurboGit.ViewModels
 {
@@ -12,10 +13,10 @@ namespace TurboGit.ViewModels
     public partial class MainWindowViewModel : ObservableObject
     {
         [ObservableProperty]
-        private ObservableCollection<Repository> _repositoryList;
+        private ObservableCollection<LocalRepository> _repositoryList;
 
         [ObservableProperty]
-        private Repository _selectedRepository;
+        private LocalRepository _selectedRepository;
 
         [ObservableProperty]
         private HistoryViewModel _historyViewModel;
@@ -26,10 +27,10 @@ namespace TurboGit.ViewModels
         public MainWindowViewModel()
         {
             // In a real application, this would be loaded from settings.
-            RepositoryList = new ObservableCollection<Repository>
+            RepositoryList = new ObservableCollection<LocalRepository>
             {
-                new Repository { Name = "TurboGit Project", Path = "/path/to/turbogit" },
-                new Repository { Name = "Avalonia UI", Path = "/path/to/avalonia" }
+                new LocalRepository { Name = "TurboGit Project", Path = "/path/to/turbogit" },
+                new LocalRepository { Name = "Avalonia UI", Path = "/path/to/avalonia" }
             };
 
             // Instantiate the child ViewModels
@@ -38,20 +39,16 @@ namespace TurboGit.ViewModels
         }
 
         // This method would be called when the selection changes in the UI.
-        partial void OnSelectedRepositoryChanged(Repository value)
+        partial void OnSelectedRepositoryChanged(LocalRepository value)
         {
             // When a repository is selected, we notify the child ViewModels
             // to load the data for that specific repository.
             // This is a crucial step for the application's reactivity.
-            HistoryViewModel.LoadCommits(value.Path);
-            StagingViewModel.LoadChanges(value.Path);
+            if (value != null)
+            {
+                HistoryViewModel.LoadCommits(value.Path);
+                StagingViewModel.LoadChanges(value.Path);
+            }
         }
-    }
-
-    // A simple model to represent a repository.
-    public class Repository
-    {
-        public string Name { get; set; }
-        public string Path { get; set; }
     }
 }

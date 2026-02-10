@@ -1,4 +1,4 @@
-using System.ComponentModel;
+using System;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using LibGit2Sharp;
@@ -8,22 +8,32 @@ namespace TurboGit.Services
     /// <summary>
     /// Service to handle exporting a commit as a Zip archive.
     /// </summary>
-    public class ZipExportService
+    public class ZipExportService : IZipExportService
     {
         /// <summary>
         /// Exports the state of the repository at a specific commit to a Zip file.
         /// The .git directory is excluded.
+        /// implicit: This uses the commit tree, so it respects .gitignore (ignored files are not in the tree).
         /// </summary>
-        /// <param name="commit">The commit to export.</param>
+        /// <param name="repoPath">The repository root path.</param>
+        /// <param name="commitSha">The SHA of the commit to export.</param>
         /// <param name="outputZipPath">The path where the Zip file will be saved.</param>
-        public async Task ExportCommitAsZip(Commit commit, string outputZipPath)
+        public async Task ExportCommitAsZipAsync(string repoPath, string commitSha, string outputZipPath)
         {
             await Task.Run(() =>
             {
-                var tree = commit.Tree;
-                using (var zipArchive = ZipFile.Open(outputZipPath, ZipArchiveMode.Create))
+                using (var repo = new Repository(repoPath))
                 {
-                    AddTreeEntriesToZip(tree, zipArchive, "");
+                    var commit = repo.Lookup<Commit>(commitSha);
+                    if (commit == null)
+                    {
+                        throw new ArgumentException($"Commit {commitSha} not found in repository {repoPath}.");
+                    }
+
+                    using (var zipArchive = ZipFile.Open(outputZipPath, ZipArchiveMode.Create))
+                    {
+                        AddTreeEntriesToZip(commit.Tree, zipArchive, "");
+                    }
                 }
             });
         }
