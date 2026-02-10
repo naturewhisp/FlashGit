@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Octokit;
+using TurboGit.Infrastructure.Security;
 
 namespace TurboGit.Services
 {
@@ -42,6 +43,12 @@ namespace TurboGit.Services
         {
             var request = new OauthTokenRequest(ClientId, ClientSecret, code);
             var token = await _client.Oauth.CreateAccessToken(request);
+
+            if (!string.IsNullOrEmpty(token?.AccessToken))
+            {
+                TokenManager.SaveToken(token.AccessToken);
+            }
+
             return token;
         }
 

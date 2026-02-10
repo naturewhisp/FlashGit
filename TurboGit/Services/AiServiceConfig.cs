@@ -6,7 +6,7 @@ namespace TurboGit.Services
     /// </summary>
     public class AiServiceConfig
     {
-        public string ApiKey { get; set; }
-        public string Endpoint { get; set; }
+        public required string ApiKey { get; set; }
+        public string? Endpoint { get; set; }
     }
 }

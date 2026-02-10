@@ -92,7 +92,7 @@ namespace TurboGit.Services
             return sb.ToString();
         }
 
-        private string ParseGeminiResponse(string jsonResponse)
+        private string? ParseGeminiResponse(string jsonResponse)
         {
             try
             {
@@ -118,10 +118,10 @@ namespace TurboGit.Services
             return null;
         }
 
-        private string ExtractCodeBlock(string text)
+        private string ExtractCodeBlock(string? text)
         {
              // Remove potential markdown code blocks if the model ignores the instruction
-             if (string.IsNullOrEmpty(text)) return text;
+             if (string.IsNullOrEmpty(text)) return text ?? string.Empty;
 
              var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
              var sb = new StringBuilder();
