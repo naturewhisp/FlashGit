@@ -1,0 +1,56 @@
+<!-- TurboGit/Views/ConflictResolutionView.axaml -->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TurboGit.ViewModels"
+        x:Class="TurboGit.Views.ConflictResolutionView"
+        Title="Resolve Merge Conflict"
+        Width="1200" Height="700"
+        WindowStartupLocation="CenterOwner">
+
+    <Design.DataContext>
+        <vm:ConflictResolutionViewModel/>
+    </Design.DataContext>
+
+    <DockPanel Margin="10">
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <TextBlock Text="{Binding FilePath, StringFormat='Resolving conflict in: {0}'}" FontWeight="Bold"/>
+            <TextBlock Text="Review the changes and use the AI resolver to generate a solution." Foreground="Gray"/>
+        </StackPanel>
+
+        <!-- Action Buttons -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Resolve with AI" Command="{Binding ResolveWithAiCommand}" IsEnabled="{Binding IsNotBusy}" Padding="10,5" Margin="0,0,10,0"/>
+            <Button Content="Accept & Mark as Resolved" Command="{Binding AcceptSolutionCommand}" IsEnabled="{Binding IsResolved}" Padding="10,5" Background="DarkGreen"/>
+            <Button Content="Cancel" Click="OnCancelClicked" Padding="10,5" Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <!-- Main Content Grid -->
+        <Grid ColumnDefinitions="*,*,*">
+            <!-- Current Changes -->
+            <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Current Changes (HEAD)" FontWeight="Bold" Background="LightGray" Padding="5"/>
+                    <TextBox Text="{Binding CurrentChanges}" IsReadOnly="True" AcceptsReturn="True" FontFamily="monospace" Margin="5"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Incoming Changes -->
+            <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Margin="10,0">
+                 <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Incoming Changes" FontWeight="Bold" Background="LightGray" Padding="5"/>
+                    <TextBox Text="{Binding IncomingChanges}" IsReadOnly="True" AcceptsReturn="True" FontFamily="monospace" Margin="5"/>
+                </DockPanel>
+            </Border>
+
+            <!-- AI Resolved Output -->
+            <Border Grid.Column="2" BorderBrush="DodgerBlue" BorderThickness="2">
+                 <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="AI Resolved Output" FontWeight="Bold" Background="LightBlue" Padding="5"/>
+                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" Margin="20"/>
+                    <TextBox Text="{Binding ResolvedContent}" AcceptsReturn="True" FontFamily="monospace" Margin="5" IsVisible="{Binding IsNotBusy}"/>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
-using ReactiveUI;
+using ReactiveUG;
 using TurboGit.Core.Models;
 
 namespace TurboGit.ViewModels;
@@ -9,7 +9,7 @@ public class MainViewModel : ViewModelBase
 {
     private LocalRepository? _selectedRepository;
 
-    // A collection to hold the repositories listed in the sidebar.
+    // A collection to hold the repositorries listed in the sidebar.
     public ObservableCollection<LocalRepository> Repositories { get; }
 
     // Command to handle adding a new repository.
@@ -53,6 +53,6 @@ public class MainViewModel : ViewModelBase
     {
         // TODO: Implement US1 - Load saved repositories from config.
         Repositories.Add(new LocalRepository { Name = "TurboGit", Path = "C:/dev/TurboGit" });
-        Repositories.Add(new LocalRepository { Name = "AvaloniaUI", Path = "C:/dev/AvaloniaUI" });
+        Repositories.Add(new LocalRepository { Name = "AvaloniaUA", Path = "C:/dev/AvaloniaUI" });
     }
 }

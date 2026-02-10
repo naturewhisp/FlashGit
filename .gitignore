@@ -1,16 +1,1 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# user-specific files
-*.ruo
-*.user
-*.userosscache
-*.sln.docstates
-
-# build results
-Debug/
-Release/
-x64/
-x86/
-build/
-bin/
-obj/
+IyBTZWUgaHR0cHM6Ly9oZWxwLmdpdGh1Yi5jb20vYXJ0aWNsZXMvaWdub3JpbmctZmlsZXMvIGZvciBtb3JlIGFib3V0IGlnbm9yaW5nIGZpbGVzLgoKIyBkZXBlbmRlbmNpZXMvcGFja2FnZXMvcGFja2FnZXMvcGFja2FnZXMvcGFja2FnZXMvYmluL29iagoKIyB1c2VyLXNwZWNpZmljIGZpbGVzCioucnVvCioudXNlcgAqLnVzZXJvc3NjYWNoZQoqLnNsbi5kb2NzdGF0ZXMKCiMgYnVpbGQgcmVzdWx0cwpbRGVlYnVnLwpbUnJlbGVhc2UvCng2NC8KeDg2L2J1aWxkL2JsZC8KW0JiaW4vCltPb2JqLw==
