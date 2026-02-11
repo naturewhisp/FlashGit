@@ -54,20 +54,13 @@ namespace TurboGit.Controls
 
             // This is the virtualization part: we only iterate over items
             // that are currently visible within the control's bounds.
-            int firstVisibleIndex = (int)(Bounds.Top / rowHeight);
+            int firstVisibleIndex = Math.Max(0, (int)(Bounds.Top / rowHeight));
             int lastVisibleIndex = Math.Min(((int)(Bounds.Bottom / rowHeight)) + 1, GetItemsCount());
 
-            int currentIndex = 0;
-            foreach (var item in Items)
+            // Helper to draw a single item
+            void DrawItem(GitCommit item, int index)
             {
-                if (currentIndex < firstVisibleIndex)
-                {
-                    currentIndex++;
-                    continue;
-                }
-                if (currentIndex > lastVisibleIndex) break;
-
-                double y = (currentIndex * rowHeight) + (rowHeight / 2);
+                double y = (index * rowHeight) + (rowHeight / 2);
 
                 // --- 1. Draw Graph Lines (Conceptual) ---
                 // In a real implementation, we'd need to know parent-child relationships
@@ -92,8 +85,31 @@ namespace TurboGit.Controls
                 );
 
                 context.DrawText(formattedText, new Point(graphColumnWidth + 10, y - formattedText.Height / 2));
+            }
 
-                currentIndex++;
+            if (Items is IList<GitCommit> listItems)
+            {
+                for (int i = firstVisibleIndex; i <= lastVisibleIndex && i < listItems.Count; i++)
+                {
+                    DrawItem(listItems[i], i);
+                }
+            }
+            else
+            {
+                int currentIndex = 0;
+                foreach (var item in Items)
+                {
+                    if (currentIndex < firstVisibleIndex)
+                    {
+                        currentIndex++;
+                        continue;
+                    }
+                    if (currentIndex > lastVisibleIndex) break;
+
+                    DrawItem(item, currentIndex);
+
+                    currentIndex++;
+                }
             }
         }
 
