@@ -1,5 +1,6 @@
 using Moq;
 using TurboGit.Core.Models;
+using TurboGit.Services;
 using TurboGit.ViewModels;
 using Xunit;
 
@@ -12,7 +13,8 @@ namespace TurboGit.Tests.ViewModels
         {
             // Arrange
             var viewModel = new MainWindowViewModel();
-            var mockHistoryViewModel = new Mock<HistoryViewModel>();
+            // Pass nulls for optional arguments to satisfy Moq's constructor resolution
+            var mockHistoryViewModel = new Mock<HistoryViewModel>((IGitService?)null, (IZipExportService?)null);
             var mockStagingViewModel = new Mock<StagingViewModel>();
 
             // Inject mocks

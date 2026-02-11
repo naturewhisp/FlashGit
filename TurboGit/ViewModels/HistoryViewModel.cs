@@ -22,11 +22,11 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         private ObservableCollection<GitCommit> _commits;
 
-        public HistoryViewModel()
+        public HistoryViewModel(IGitService gitService = null, IZipExportService zipExportService = null)
         {
             // In a real DI scenario, services would be injected.
-            _gitService = new GitService();
-            _zipExportService = new ZipExportService();
+            _gitService = gitService ?? new GitService();
+            _zipExportService = zipExportService ?? new ZipExportService();
             Commits = new ObservableCollection<GitCommit>();
         }
 
@@ -35,7 +35,7 @@ namespace TurboGit.ViewModels
         /// This should be called when the user selects a repository.
         /// </summary>
         /// <param name="repoPath">The file system path to the repository.</param>
-        public virtual async void LoadCommits(string repoPath)
+        public virtual async Task LoadCommits(string repoPath)
         {
             if (string.IsNullOrEmpty(repoPath)) return;
 
@@ -44,10 +44,7 @@ namespace TurboGit.ViewModels
 
             // Asynchronously load commits to keep the UI responsive.
             var commitLog = await _gitService.GetCommitHistoryAsync(repoPath);
-            foreach (var commit in commitLog)
-            {
-                Commits.Add(commit);
-            }
+            Commits = new ObservableCollection<GitCommit>(commitLog);
         }
 
         /// <summary>
