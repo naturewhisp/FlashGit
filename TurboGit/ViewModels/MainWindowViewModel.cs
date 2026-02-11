@@ -1,8 +1,9 @@
-// TurboGit/ViewModels/MainWindowViewModel.cs
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using TurboGit.Core.Models; // Assuming LocalRepository model exists
+using System.Threading.Tasks;
+using TurboGit.Core.Models;
 
 namespace TurboGit.ViewModels
 {
@@ -27,10 +28,11 @@ namespace TurboGit.ViewModels
         public MainWindowViewModel()
         {
             // In a real application, this would be loaded from settings.
+            // Using Environment.GetFolderPath to provide a valid path structure on Windows.
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             RepositoryList = new ObservableCollection<LocalRepository>
             {
-                new LocalRepository { Name = "TurboGit Project", Path = "/path/to/turbogit" },
-                new LocalRepository { Name = "Avalonia UI", Path = "/path/to/avalonia" }
+                new LocalRepository { Name = "Home Directory", Path = userProfile }
             };
 
             // Instantiate the child ViewModels
@@ -39,15 +41,26 @@ namespace TurboGit.ViewModels
         }
 
         // This method would be called when the selection changes in the UI.
-        partial void OnSelectedRepositoryChanged(LocalRepository value)
+        async partial void OnSelectedRepositoryChanged(LocalRepository value)
         {
             // When a repository is selected, we notify the child ViewModels
             // to load the data for that specific repository.
             // This is a crucial step for the application's reactivity.
             if (value != null)
             {
-                HistoryViewModel.LoadCommits(value.Path);
-                StagingViewModel.LoadChanges(value.Path);
+                try
+                {
+                    // Await the async loading tasks to ensure they complete and handle exceptions.
+                    // Load both History and Staging concurrently for better performance.
+                    var loadHistoryTask = HistoryViewModel.LoadCommits(value.Path);
+                    var loadChangesTask = StagingViewModel.LoadChanges(value.Path);
+
+                    await Task.WhenAll(loadHistoryTask, loadChangesTask);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading repository: {ex.Message}");
+                }
             }
         }
     }
