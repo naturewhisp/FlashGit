@@ -4,7 +4,6 @@
         xmlns:vm="using:TurboGit.ViewModels"
         xmlns:views="using:TurboGit.Views"
         x:Class="TurboGit.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
         Title="TurboGit"
         Width="1280" Height="800">
 
