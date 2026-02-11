@@ -28,11 +28,6 @@ namespace TurboGit.ViewModels
         private async Task Login()
         {
             StatusMessage = "Waiting for GitHub authentication...";
-            string authUrl = _gitHubService.GetGitHubLoginUrl();
-
-            // Open the user's default browser to the GitHub authorization page
-            Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
-
             // Start a local listener to catch the redirect
             await HandleOAuthCallback();
         }
@@ -41,10 +36,18 @@ namespace TurboGit.ViewModels
         {
             try
             {
+                int port = GetFreePort();
+                string redirectUri = $"http://127.0.0.1:{port}/callback/";
+
                 using (var listener = new HttpListener())
                 {
-                    listener.Prefixes.Add(Constants.GitHubOAuthCallbackUrl);
+                    listener.Prefixes.Add(redirectUri);
                     listener.Start();
+
+                    string authUrl = _gitHubService.GetGitHubLoginUrl(redirectUri);
+
+                    // Open the user's default browser to the GitHub authorization page
+                    Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
 
                     // Asynchronously wait for one request
                     HttpListenerContext context = await listener.GetContextAsync();
@@ -66,7 +69,7 @@ namespace TurboGit.ViewModels
                     if (!string.IsNullOrEmpty(code))
                     {
                         StatusMessage = "Exchanging code for access token...";
-                        var token = await _gitHubService.GetAccessToken(code);
+                        var token = await _gitHubService.GetAccessToken(code, redirectUri);
 
                         if (token != null && !string.IsNullOrEmpty(token.AccessToken))
                         {
@@ -88,6 +91,15 @@ namespace TurboGit.ViewModels
             {
                 StatusMessage = $"An error occurred: {ex.Message}";
             }
+        }
+
+        private int GetFreePort()
+        {
+            var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            listener.Stop();
+            return port;
         }
     }
 }

@@ -13,15 +13,17 @@ namespace TurboGit.Services
         /// <summary>
         /// Gets the URL to initiate the GitHub OAuth login flow.
         /// </summary>
+        /// <param name="redirectUri">The optional redirect URI. If null, the default is used.</param>
         /// <returns>The GitHub OAuth authorization URL.</returns>
-        string GetGitHubLoginUrl();
+        string GetGitHubLoginUrl(string? redirectUri = null);
 
         /// <summary>
         /// Gets an access token from GitHub using the provided temporary code.
         /// </summary>
         /// <param name="code">The temporary code from the OAuth redirect.</param>
+        /// <param name="redirectUri">The optional redirect URI used in the initial request.</param>
         /// <returns>An OAuth access token.</returns>
-        Task<OauthToken> GetAccessToken(string code);
+        Task<OauthToken> GetAccessToken(string code, string? redirectUri = null);
 
         /// <summary>
         /// Gets the authenticated GitHub client.
