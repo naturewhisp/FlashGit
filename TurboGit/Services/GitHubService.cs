@@ -24,13 +24,14 @@ namespace TurboGit.Services
         /// Gets the URL to initiate the GitHub OAuth login flow.
         /// This URL directs the user to GitHub to authorize the application.
         /// </summary>
+        /// <param name="redirectUri">The optional redirect URI. If null, the default is used.</param>
         /// <returns>The GitHub OAuth authorization URL.</returns>
-        public string GetGitHubLoginUrl()
+        public string GetGitHubLoginUrl(string? redirectUri = null)
         {
             var request = new OauthLoginRequest(ClientId)
             {
                 Scopes = { "repo", "user" }, // Request access to repositories and user profile
-                RedirectUri = new Uri(Constants.GitHubOAuthCallbackUrl) // Local listener for the callback
+                RedirectUri = new Uri(redirectUri ?? Constants.GitHubOAuthCallbackUrl) // Local listener for the callback
             };
             return _client.Oauth.GetGitHubLoginUrl(request).ToString();
         }
@@ -39,10 +40,15 @@ namespace TurboGit.Services
         /// Exchanges the temporary code received from GitHub for a permanent access token.
         /// </summary>
         /// <param name="code">The temporary code from the OAuth redirect.</param>
+        /// <param name="redirectUri">The optional redirect URI used in the initial request.</param>
         /// <returns>An OAuth access token.</returns>
-        public async Task<OauthToken> GetAccessToken(string code)
+        public async Task<OauthToken> GetAccessToken(string code, string? redirectUri = null)
         {
             var request = new OauthTokenRequest(ClientId, ClientSecret, code);
+            if (!string.IsNullOrEmpty(redirectUri))
+            {
+                request.RedirectUri = new Uri(redirectUri);
+            }
             var token = await _client.Oauth.CreateAccessToken(request);
 
             if (!string.IsNullOrEmpty(token?.AccessToken))
