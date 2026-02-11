@@ -16,11 +16,14 @@ namespace TurboGit.Services
 
         public string Name => "Gemini Pro";
 
-        public GeminiProResolver(AiServiceConfig config)
+        public GeminiProResolver(AiServiceConfig config, HttpClient? httpClient = null)
         {
             _config = config;
-            _httpClient = new HttpClient();
-            _httpClient.Timeout = TimeSpan.FromSeconds(30); // Set timeout
+            _httpClient = httpClient ?? new HttpClient();
+            if (httpClient == null)
+            {
+                _httpClient.Timeout = TimeSpan.FromSeconds(30); // Set timeout
+            }
         }
 
         public async Task<string> ResolveConflictAsync(string conflictedContent, string languageHint)
@@ -123,43 +126,30 @@ namespace TurboGit.Services
              // Remove potential markdown code blocks if the model ignores the instruction
              if (string.IsNullOrEmpty(text)) return text ?? string.Empty;
 
+             bool hasCodeBlock = text.Contains("```");
              var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
              var sb = new StringBuilder();
              bool insideCodeBlock = false;
-             bool foundCodeBlock = false;
 
              foreach(var line in lines)
              {
                  if (line.Trim().StartsWith("```"))
                  {
-                     if (insideCodeBlock)
-                     {
-                         insideCodeBlock = false; // End of block
-                     }
-                     else
-                     {
-                         insideCodeBlock = true; // Start of block
-                         foundCodeBlock = true;
-                     }
+                     insideCodeBlock = !insideCodeBlock;
                      continue;
                  }
 
-                 if (insideCodeBlock || !foundCodeBlock)
+                 if (insideCodeBlock)
                  {
-                     // If we found a code block, we only append lines inside it.
-                     // If we haven't found any code block yet, we assume the whole text is code (unless it starts later).
-                     // This is a simple heuristic. Better to prompt effectively.
-                     if (foundCodeBlock && !insideCodeBlock) continue;
-
+                     sb.AppendLine(line);
+                 }
+                 else if (!hasCodeBlock)
+                 {
                      sb.AppendLine(line);
                  }
              }
 
-             var result = sb.ToString().Trim();
-             // If heuristic failed (e.g. no markdown), return original text cleaned up
-             if (string.IsNullOrEmpty(result) && !string.IsNullOrEmpty(text)) return text.Trim();
-
-             return result;
+             return sb.ToString().Trim();
         }
     }
 }
