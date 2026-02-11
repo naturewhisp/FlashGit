@@ -35,7 +35,7 @@ namespace TurboGit.ViewModels
         /// This should be called when the user selects a repository.
         /// </summary>
         /// <param name="repoPath">The file system path to the repository.</param>
-        public async void LoadCommits(string repoPath)
+        public virtual async void LoadCommits(string repoPath)
         {
             if (string.IsNullOrEmpty(repoPath)) return;
 

@@ -32,7 +32,7 @@ namespace TurboGit.ViewModels
             StagedFiles = new ObservableCollection<GitFileStatus>();
         }
 
-        public async void LoadChanges(string repoPath)
+        public virtual async void LoadChanges(string repoPath)
         {
             _currentRepoPath = repoPath;
             if (string.IsNullOrEmpty(_currentRepoPath)) return;
