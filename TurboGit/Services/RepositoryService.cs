@@ -1,0 +1,95 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using TurboGit.Core.Models;
+
+namespace TurboGit.Services
+{
+    public class RepositoryService : IRepositoryService
+    {
+        private readonly string _configPath;
+        private List<LocalRepository> _repositories;
+
+        public RepositoryService()
+        {
+            var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var turboGitPath = Path.Combine(appDataPath, "TurboGit");
+            if (!Directory.Exists(turboGitPath))
+            {
+                Directory.CreateDirectory(turboGitPath);
+            }
+            _configPath = Path.Combine(turboGitPath, "repositories.json");
+            _repositories = new List<LocalRepository>();
+        }
+
+        public async Task<IEnumerable<LocalRepository>> GetRepositoriesAsync()
+        {
+            if (_repositories.Count == 0 && File.Exists(_configPath))
+            {
+                try
+                {
+                    var json = await File.ReadAllTextAsync(_configPath);
+                    _repositories = JsonSerializer.Deserialize<List<LocalRepository>>(json) ?? new List<LocalRepository>();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading repositories: {ex.Message}");
+                    // Optionally handle corrupted file, e.g., rename it to .bak and start fresh
+                }
+            }
+
+            // If still empty (first run), add a default "Home" repo if not present
+            if (_repositories.Count == 0)
+            {
+                 // Check if user wants this default behavior. The original code added "Home Directory".
+                 // Let's keep the original logic's spirit but persist it.
+                 // Actually, let's just return what we have. If the UI wants to add default, it can.
+                 // But wait, the original code had:
+                 // new LocalRepository { Name = "Home Directory", Path = userProfile }
+                 // I should probably add this if the list is empty to maintain behavior for new users.
+
+                 // However, "Replace Dummy Data" suggests we want *real* data.
+                 // But if there is no real data yet, showing Home is a reasonable default.
+                 // I'll stick to just loading what's in the file. The ViewModel can decide on defaults.
+            }
+
+            return _repositories;
+        }
+
+        public async Task AddRepositoryAsync(LocalRepository repository)
+        {
+            if (!_repositories.Any(r => r.Path == repository.Path))
+            {
+                _repositories.Add(repository);
+                await SaveRepositoriesAsync();
+            }
+        }
+
+        public async Task RemoveRepositoryAsync(LocalRepository repository)
+        {
+            var existing = _repositories.FirstOrDefault(r => r.Path == repository.Path);
+            if (existing != null)
+            {
+                _repositories.Remove(existing);
+                await SaveRepositoriesAsync();
+            }
+        }
+
+        private async Task SaveRepositoriesAsync()
+        {
+            try
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var json = JsonSerializer.Serialize(_repositories, options);
+                await File.WriteAllTextAsync(_configPath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving repositories: {ex.Message}");
+            }
+        }
+    }
+}
