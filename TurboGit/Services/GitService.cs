@@ -64,11 +64,11 @@ namespace TurboGit.Services
 
                              if(isStaged)
                              {
-                                statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = true, Status = item.State.ToString() });
+                                statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = true, Status = (CoreFileStatus)item.State });
                              }
                              else
                              {
-                                statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = false, Status = item.State.ToString() });
+                                statuses.Add(new GitFileStatus { FilePath = item.FilePath, IsStaged = false, Status = (CoreFileStatus)item.State });
                              }
                         }
                         return (IEnumerable<GitFileStatus>)statuses;

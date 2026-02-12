@@ -4,6 +4,6 @@ namespace TurboGit.Core.Models
     {
         public string FilePath { get; set; } = string.Empty;
         public bool IsStaged { get; set; }
-        public string Status { get; set; } = string.Empty;
+        public CoreFileStatus Status { get; set; }
     }
 }
