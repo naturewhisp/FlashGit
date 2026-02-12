@@ -21,7 +21,7 @@ namespace TurboGit.ViewModels
         private ObservableCollection<LocalRepository> _repositoryList;
 
         [ObservableProperty]
-        private LocalRepository _selectedRepository;
+        private LocalRepository? _selectedRepository;
 
         [ObservableProperty]
         private HistoryViewModel _historyViewModel;
@@ -68,7 +68,7 @@ namespace TurboGit.ViewModels
         }
 
         // This method would be called when the selection changes in the UI.
-        async partial void OnSelectedRepositoryChanged(LocalRepository value)
+        async partial void OnSelectedRepositoryChanged(LocalRepository? value)
         {
             // When a repository is selected, we notify the child ViewModels
             // to load the data for that specific repository.
