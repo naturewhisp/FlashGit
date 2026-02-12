@@ -34,10 +34,27 @@ namespace TurboGit.Services
                     var json = await File.ReadAllTextAsync(_configPath);
                     _repositories = JsonSerializer.Deserialize<List<LocalRepository>>(json) ?? new List<LocalRepository>();
                 }
+                catch (JsonException ex)
+                {
+                     Console.WriteLine($"Error deserializing repositories: {ex.Message}");
+                     // If the file is corrupted (invalid JSON), rename it to .bak and start with an empty list.
+                     // This prevents the app from crashing or getting stuck in a broken state.
+                     try
+                     {
+                        var backupPath = _configPath + ".bak";
+                        if (File.Exists(backupPath)) File.Delete(backupPath);
+                        File.Move(_configPath, backupPath);
+                     }
+                     catch(Exception moveEx)
+                     {
+                         Console.WriteLine($"Failed to rename corrupted config file: {moveEx.Message}");
+                     }
+                     _repositories = new List<LocalRepository>();
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error loading repositories: {ex.Message}");
-                    // Optionally handle corrupted file, e.g., rename it to .bak and start fresh
+                    _repositories = new List<LocalRepository>();
                 }
             }
 
