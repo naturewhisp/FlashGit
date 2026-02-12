@@ -63,16 +63,24 @@ namespace TurboGit.ViewModels
         {
             if (RequestFolderSelection != null)
             {
-                var path = await RequestFolderSelection();
-                if (!string.IsNullOrEmpty(path))
+                try
                 {
-                    // Use the folder name as the repository name
-                    var name = new DirectoryInfo(path).Name;
-                    var newRepo = new LocalRepository { Name = name, Path = path };
+                    var path = await RequestFolderSelection();
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        // Use the folder name as the repository name
+                        var name = new DirectoryInfo(path).Name;
+                        var newRepo = new LocalRepository { Name = name, Path = path };
 
-                    await _repositoryService.AddRepositoryAsync(newRepo);
-                    RepositoryList.Add(newRepo);
-                    SelectedRepository = newRepo;
+                        await _repositoryService.AddRepositoryAsync(newRepo);
+                        RepositoryList.Add(newRepo);
+                        SelectedRepository = newRepo;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage = $"Failed to add repository: {ex.Message}";
+                    Console.WriteLine(ErrorMessage);
                 }
             }
         }

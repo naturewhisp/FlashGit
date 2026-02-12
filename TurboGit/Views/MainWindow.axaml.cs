@@ -9,6 +9,8 @@ namespace TurboGit.Views
 {
     public partial class MainWindow : Window
     {
+        private MainWindowViewModel? _viewModel;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -22,8 +24,14 @@ namespace TurboGit.Views
 
         private void OnDataContextChanged(object? sender, EventArgs e)
         {
+            if (_viewModel != null)
+            {
+                _viewModel.RequestFolderSelection = null;
+            }
+
             if (DataContext is MainWindowViewModel vm)
             {
+                _viewModel = vm;
                 vm.RequestFolderSelection = async () =>
                 {
                     if (StorageProvider != null)
@@ -39,6 +47,10 @@ namespace TurboGit.Views
                     }
                     return null;
                 };
+            }
+            else
+            {
+                _viewModel = null;
             }
         }
     }
