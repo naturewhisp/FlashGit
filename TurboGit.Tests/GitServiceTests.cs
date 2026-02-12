@@ -12,6 +12,7 @@ namespace TurboGit.Tests
     public class GitServiceTests : IDisposable
     {
         private readonly string _tempRepoPath;
+        private readonly string _tempRemotePath;
         private readonly GitService _gitService;
 
         public GitServiceTests()
@@ -20,10 +21,47 @@ namespace TurboGit.Tests
             _tempRepoPath = Path.Combine(Path.GetTempPath(), "TurboGitTests_" + Guid.NewGuid());
             Directory.CreateDirectory(_tempRepoPath);
 
+            // Create a temporary directory for the remote repository
+            _tempRemotePath = Path.Combine(Path.GetTempPath(), "TurboGitTests_Remote_" + Guid.NewGuid());
+            Directory.CreateDirectory(_tempRemotePath);
+
             // Initialize Git repository
             Repository.Init(_tempRepoPath);
+            Repository.Init(_tempRemotePath);
 
             _gitService = new GitService();
+        }
+
+        [Fact]
+        public async Task FetchAsync_FetchesFromRemote()
+        {
+            // Arrange
+            // 1. Create a commit in the remote repo
+            using (var remoteRepo = new Repository(_tempRemotePath))
+            {
+                var signature = new Signature("Remote User", "remote@example.com", DateTimeOffset.Now);
+                File.WriteAllText(Path.Combine(_tempRemotePath, "remote_file.txt"), "remote content");
+                Commands.Stage(remoteRepo, "remote_file.txt");
+                remoteRepo.Commit("Remote commit", signature, signature);
+            }
+
+            // 2. Add the remote to the local repo
+            using (var localRepo = new Repository(_tempRepoPath))
+            {
+                localRepo.Network.Remotes.Add("origin", _tempRemotePath);
+            }
+
+            // Act
+            await _gitService.FetchAsync(_tempRepoPath);
+
+            // Assert
+            using (var localRepo = new Repository(_tempRepoPath))
+            {
+                // Verify that the remote branch exists and has the commit
+                var remoteBranch = localRepo.Branches["origin/master"];
+                Assert.NotNull(remoteBranch);
+                Assert.Equal("Remote commit", remoteBranch.Tip.MessageShort);
+            }
         }
 
         [Fact]
@@ -74,13 +112,19 @@ namespace TurboGit.Tests
         public void Dispose()
         {
             // Cleanup
-            if (Directory.Exists(_tempRepoPath))
+            CleanupDirectory(_tempRepoPath);
+            CleanupDirectory(_tempRemotePath);
+        }
+
+        private void CleanupDirectory(string path)
+        {
+            if (Directory.Exists(path))
             {
                 try
                 {
                     // Helper to remove read-only attributes which git can set
-                    SetAttributesNormal(_tempRepoPath);
-                    Directory.Delete(_tempRepoPath, true);
+                    SetAttributesNormal(path);
+                    Directory.Delete(path, true);
                 }
                 catch
                 {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LibGit2Sharp;
 using TurboGit.Core.Models;
+using TurboGit.Infrastructure.Security;
 using TurboGit.ViewModels;
 
 namespace TurboGit.Services
@@ -15,6 +16,7 @@ namespace TurboGit.Services
         Task<IEnumerable<GitFileStatus>> GetFileStatusAsync(string repoPath);
         Task StageFileAsync(string repoPath, string filePath);
         Task UnstageFileAsync(string repoPath, string filePath);
+        Task FetchAsync(string repoPath);
         Task<string> GetFileDiffAsync(string repoPath, string filePath, bool staged);
     }
 
@@ -138,6 +140,46 @@ namespace TurboGit.Services
                     }
 
                     return patch?.Content ?? "No changes.";
+                }
+            });
+        }
+
+        public Task FetchAsync(string repoPath)
+        {
+            return Task.Run(() =>
+            {
+                using (var repo = new Repository(repoPath))
+                {
+                    var remote = repo.Network.Remotes["origin"];
+                    if (remote == null)
+                    {
+                        // Try fallback to the first remote if origin doesn't exist
+                        remote = repo.Network.Remotes.FirstOrDefault();
+                    }
+
+                    if (remote != null)
+                    {
+                        var options = new FetchOptions();
+
+                        // Set up credential provider
+                        options.CredentialsProvider = (_url, _user, _cred) =>
+                        {
+                            var token = TokenManager.GetToken();
+                            if (!string.IsNullOrEmpty(token))
+                            {
+                                return new UsernamePasswordCredentials
+                                {
+                                    Username = "x-access-token", // GitHub convention for token as username
+                                    Password = token
+                                };
+                            }
+                            // Return default credentials if no token found (e.g. for public repos)
+                            return new DefaultCredentials();
+                        };
+
+                        var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+                        Commands.Fetch(repo, remote.Name, refSpecs, options, null);
+                    }
                 }
             });
         }
