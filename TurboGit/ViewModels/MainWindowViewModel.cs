@@ -4,6 +4,9 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using TurboGit.Core.Models;
+using TurboGit.Services;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace TurboGit.ViewModels
 {
@@ -13,11 +16,13 @@ namespace TurboGit.ViewModels
     /// </summary>
     public partial class MainWindowViewModel : ObservableObject
     {
+        private readonly IRepositoryService _repositoryService;
+
         [ObservableProperty]
         private ObservableCollection<LocalRepository> _repositoryList;
 
         [ObservableProperty]
-        private LocalRepository _selectedRepository;
+        private LocalRepository? _selectedRepository;
 
         [ObservableProperty]
         private HistoryViewModel _historyViewModel;
@@ -25,23 +30,63 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         private StagingViewModel _stagingViewModel;
 
-        public MainWindowViewModel()
+        // Property to expose error messages to the view (if we had a notification system)
+        [ObservableProperty]
+        private string? _errorMessage;
+
+        public MainWindowViewModel() : this(new RepositoryService())
         {
-            // In a real application, this would be loaded from settings.
-            // Using Environment.GetFolderPath to provide a valid path structure on Windows.
-            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            RepositoryList = new ObservableCollection<LocalRepository>
-            {
-                new LocalRepository { Name = "Home Directory", Path = userProfile }
-            };
+        }
+
+        public MainWindowViewModel(IRepositoryService repositoryService)
+        {
+            _repositoryService = repositoryService;
+
+            RepositoryList = new ObservableCollection<LocalRepository>();
 
             // Instantiate the child ViewModels
             HistoryViewModel = new HistoryViewModel();
             StagingViewModel = new StagingViewModel();
+
+            // Load repositories asynchronously
+            _ = LoadRepositoriesAsync();
+        }
+
+        private async Task LoadRepositoriesAsync()
+        {
+            try
+            {
+                var repos = (await _repositoryService.GetRepositoriesAsync()).ToList();
+
+                if (!repos.Any())
+                {
+                    // If no repositories are saved, add the home directory as a default.
+                    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                    var defaultRepo = new LocalRepository { Name = "Home Directory", Path = userProfile };
+
+                    // Add to service (persist)
+                    await _repositoryService.AddRepositoryAsync(defaultRepo);
+
+                    // Add to local list directly to avoid re-fetching
+                    repos.Add(defaultRepo);
+                }
+
+                RepositoryList.Clear();
+                foreach (var repo in repos)
+                {
+                    RepositoryList.Add(repo);
+                }
+            }
+            catch (Exception ex)
+            {
+                // In a real app, this would be a user-facing error message (Toast, Dialog, etc.)
+                ErrorMessage = $"Failed to load repositories: {ex.Message}";
+                Console.WriteLine(ErrorMessage);
+            }
         }
 
         // This method would be called when the selection changes in the UI.
-        async partial void OnSelectedRepositoryChanged(LocalRepository value)
+        async partial void OnSelectedRepositoryChanged(LocalRepository? value)
         {
             // When a repository is selected, we notify the child ViewModels
             // to load the data for that specific repository.

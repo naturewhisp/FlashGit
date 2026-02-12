@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Moq;
 using TurboGit.Core.Models;
 using TurboGit.Services;
@@ -12,7 +13,12 @@ namespace TurboGit.Tests.ViewModels
         public void OnSelectedRepositoryChanged_ShouldCallChildViewModels()
         {
             // Arrange
-            var viewModel = new MainWindowViewModel();
+            var mockRepoService = new Mock<IRepositoryService>();
+            mockRepoService.Setup(s => s.GetRepositoriesAsync())
+                .ReturnsAsync(new List<LocalRepository>());
+
+            var viewModel = new MainWindowViewModel(mockRepoService.Object);
+
             // Pass nulls for optional arguments to satisfy Moq's constructor resolution
             var mockHistoryViewModel = new Mock<HistoryViewModel>((IGitService?)null, (IZipExportService?)null);
             var mockStagingViewModel = new Mock<StagingViewModel>();
