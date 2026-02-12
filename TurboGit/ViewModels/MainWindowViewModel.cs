@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TurboGit.Core.Models;
 using TurboGit.Services;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TurboGit.ViewModels
 {
@@ -29,6 +30,10 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         private StagingViewModel _stagingViewModel;
 
+        // Property to expose error messages to the view (if we had a notification system)
+        [ObservableProperty]
+        private string? _errorMessage;
+
         public MainWindowViewModel() : this(new RepositoryService())
         {
         }
@@ -49,21 +54,34 @@ namespace TurboGit.ViewModels
 
         private async Task LoadRepositoriesAsync()
         {
-            var repos = await _repositoryService.GetRepositoriesAsync();
-
-            if (!repos.Any())
+            try
             {
-                // If no repositories are saved, add the home directory as a default.
-                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                var defaultRepo = new LocalRepository { Name = "Home Directory", Path = userProfile };
-                await _repositoryService.AddRepositoryAsync(defaultRepo);
-                repos = await _repositoryService.GetRepositoriesAsync();
+                var repos = (await _repositoryService.GetRepositoriesAsync()).ToList();
+
+                if (!repos.Any())
+                {
+                    // If no repositories are saved, add the home directory as a default.
+                    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                    var defaultRepo = new LocalRepository { Name = "Home Directory", Path = userProfile };
+
+                    // Add to service (persist)
+                    await _repositoryService.AddRepositoryAsync(defaultRepo);
+
+                    // Add to local list directly to avoid re-fetching
+                    repos.Add(defaultRepo);
+                }
+
+                RepositoryList.Clear();
+                foreach (var repo in repos)
+                {
+                    RepositoryList.Add(repo);
+                }
             }
-
-            RepositoryList.Clear();
-            foreach (var repo in repos)
+            catch (Exception ex)
             {
-                RepositoryList.Add(repo);
+                // In a real app, this would be a user-facing error message (Toast, Dialog, etc.)
+                ErrorMessage = $"Failed to load repositories: {ex.Message}";
+                Console.WriteLine(ErrorMessage);
             }
         }
 

@@ -47,15 +47,13 @@ namespace TurboGit.Services
                      }
                      catch(Exception moveEx)
                      {
+                         // If we can't rename, we might be in trouble, but let's try to proceed with empty list
                          Console.WriteLine($"Failed to rename corrupted config file: {moveEx.Message}");
                      }
                      _repositories = new List<LocalRepository>();
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error loading repositories: {ex.Message}");
-                    _repositories = new List<LocalRepository>();
-                }
+                // We rethrow other exceptions (like unauthorized access or IO errors) so the ViewModel can decide how to handle them.
+                // The ViewModel is better positioned to show an error message to the user.
             }
 
             return _repositories;
@@ -82,16 +80,11 @@ namespace TurboGit.Services
 
         private async Task SaveRepositoriesAsync()
         {
-            try
-            {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(_repositories, options);
-                await File.WriteAllTextAsync(_configPath, json);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving repositories: {ex.Message}");
-            }
+            // Propagate exceptions during save (e.g., disk full, permission denied)
+            // so the caller knows the operation failed.
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(_repositories, options);
+            await File.WriteAllTextAsync(_configPath, json);
         }
     }
 }
