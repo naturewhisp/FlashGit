@@ -7,6 +7,7 @@ using TurboGit.Core.Models;
 using TurboGit.Services;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TurboGit.ViewModels
 {
@@ -34,6 +35,11 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         private string? _errorMessage;
 
+        /// <summary>
+        /// Delegate to request folder selection from the View.
+        /// </summary>
+        public Func<Task<string?>>? RequestFolderSelection { get; set; }
+
         public MainWindowViewModel() : this(new RepositoryService())
         {
         }
@@ -50,6 +56,33 @@ namespace TurboGit.ViewModels
 
             // Load repositories asynchronously
             _ = LoadRepositoriesAsync();
+        }
+
+        [RelayCommand]
+        private async Task AddRepository()
+        {
+            if (RequestFolderSelection != null)
+            {
+                try
+                {
+                    var path = await RequestFolderSelection();
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        // Use the folder name as the repository name
+                        var name = new DirectoryInfo(path).Name;
+                        var newRepo = new LocalRepository { Name = name, Path = path };
+
+                        await _repositoryService.AddRepositoryAsync(newRepo);
+                        RepositoryList.Add(newRepo);
+                        SelectedRepository = newRepo;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage = $"Failed to add repository: {ex.Message}";
+                    Console.WriteLine(ErrorMessage);
+                }
+            }
         }
 
         private async Task LoadRepositoriesAsync()

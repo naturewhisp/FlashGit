@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Moq;
 using TurboGit.Core.Models;
 using TurboGit.Services;
@@ -9,6 +10,29 @@ namespace TurboGit.Tests.ViewModels
 {
     public class MainWindowViewModelTests
     {
+        [Fact]
+        public async Task AddRepository_ShouldAddRepo_WhenPathIsSelected()
+        {
+            // Arrange
+            var mockRepoService = new Mock<IRepositoryService>();
+            mockRepoService.Setup(s => s.GetRepositoriesAsync())
+                .ReturnsAsync(new List<LocalRepository>());
+
+            var viewModel = new MainWindowViewModel(mockRepoService.Object);
+
+            // Mock the folder selection
+            string selectedPath = "/new/repo/path";
+            viewModel.RequestFolderSelection = () => Task.FromResult<string?>(selectedPath);
+
+            // Act
+            await viewModel.AddRepositoryCommand.ExecuteAsync(null);
+
+            // Assert
+            mockRepoService.Verify(s => s.AddRepositoryAsync(It.Is<LocalRepository>(r => r.Path == selectedPath)), Times.Once);
+            Assert.Contains(viewModel.RepositoryList, r => r.Path == selectedPath);
+            Assert.Equal(selectedPath, viewModel.SelectedRepository?.Path);
+        }
+
         [Fact]
         public void OnSelectedRepositoryChanged_ShouldCallChildViewModels()
         {

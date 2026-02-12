@@ -16,6 +16,7 @@
         <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="0,0,1,0">
             <DockPanel>
                 <TextBlock Text="REPOSITORIES" FontSize="12" FontWeight="Bold" Margin="10" DockPanel.Dock="Top"/>
+                <Button Content="Add Repository" Command="{Binding AddRepositoryCommand}" HorizontalAlignment="Stretch" Margin="10" DockPanel.Dock="Bottom"/>
                 <ListBox ItemsSource="{Binding RepositoryList}" SelectedItem="{Binding SelectedRepository}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
