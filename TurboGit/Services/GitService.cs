@@ -113,7 +113,7 @@ namespace TurboGit.Services
                 using (var repo = new Repository(repoPath))
                 {
                     var compareOptions = new CompareOptions { ContextLines = 3, InterhunkLines = 1 };
-                    Patch? patch;
+                    Patch patch;
 
                     if (staged)
                     {

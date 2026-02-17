@@ -21,6 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TurboGit.Core\TurboGit.Core.csproj" />
+    <ProjectReference Include="../TurboGit.Core/TurboGit.Core.csproj" />
   </ItemGroup>
 </Project>
