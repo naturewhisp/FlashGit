@@ -11,7 +11,7 @@ namespace TurboGit.ViewModels
     public partial class StagingViewModel : ObservableObject
     {
         private readonly IGitService _gitService;
-        private string _currentRepoPath;
+        private string? _currentRepoPath;
 
         [ObservableProperty]
         private ObservableCollection<GitFileStatus> _unstagedFiles;
@@ -20,16 +20,17 @@ namespace TurboGit.ViewModels
         private ObservableCollection<GitFileStatus> _stagedFiles;
 
         [ObservableProperty]
-        private GitFileStatus _selectedFile;
+        private GitFileStatus? _selectedFile;
 
         [ObservableProperty]
-        private string _diffContent;
+        private string? _diffContent;
 
         public StagingViewModel()
         {
             _gitService = new GitService();
-            UnstagedFiles = new ObservableCollection<GitFileStatus>();
-            StagedFiles = new ObservableCollection<GitFileStatus>();
+            _unstagedFiles = new ObservableCollection<GitFileStatus>();
+            _stagedFiles = new ObservableCollection<GitFileStatus>();
+            _diffContent = string.Empty;
         }
 
         public virtual async Task LoadChanges(string repoPath)
@@ -42,10 +43,12 @@ namespace TurboGit.ViewModels
 
         private async Task RefreshStatus()
         {
+            if (string.IsNullOrEmpty(_currentRepoPath)) return;
+
             UnstagedFiles.Clear();
             StagedFiles.Clear();
 
-            var statuses = await _gitService.GetFileStatusAsync(_currentRepoPath);
+            var statuses = await _gitService.GetFileStatusAsync(_currentRepoPath!);
             foreach (var status in statuses)
             {
                 if (status.IsStaged)
@@ -72,7 +75,7 @@ namespace TurboGit.ViewModels
         }
 
         // This method is called when the selected file changes.
-        async partial void OnSelectedFileChanged(GitFileStatus value)
+        async partial void OnSelectedFileChanged(GitFileStatus? value)
         {
             if (value == null || string.IsNullOrEmpty(_currentRepoPath))
             {
@@ -81,7 +84,7 @@ namespace TurboGit.ViewModels
             }
 
             // Load the diff for the selected file.
-            DiffContent = await _gitService.GetFileDiffAsync(_currentRepoPath, value.FilePath, value.IsStaged);
+            DiffContent = await _gitService.GetFileDiffAsync(_currentRepoPath!, value.FilePath, value.IsStaged);
         }
     }
 }

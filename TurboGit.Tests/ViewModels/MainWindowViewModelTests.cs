@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Moq;
@@ -44,7 +45,8 @@ namespace TurboGit.Tests.ViewModels
             var viewModel = new MainWindowViewModel(mockRepoService.Object);
 
             // Pass nulls for optional arguments to satisfy Moq's constructor resolution
-            var mockHistoryViewModel = new Mock<HistoryViewModel>((IGitService?)null, (IZipExportService?)null);
+            // Using explicit mocks instead of nulls to avoid warnings
+            var mockHistoryViewModel = new Mock<HistoryViewModel>(new Mock<IGitService>().Object, new Mock<IZipExportService>().Object);
             var mockStagingViewModel = new Mock<StagingViewModel>();
 
             // Inject mocks
