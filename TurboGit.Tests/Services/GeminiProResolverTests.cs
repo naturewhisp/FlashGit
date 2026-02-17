@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -120,6 +121,38 @@ namespace TurboGit.Tests.Services
 
             // Assert
             Assert.Equal(code, result);
+        }
+
+        [Fact]
+        public async Task ResolveConflictAsync_SendsApiKeyInHeader_AndNotInUrl()
+        {
+            // Arrange
+            HttpRequestMessage? capturedRequest = null;
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .Callback<HttpRequestMessage, CancellationToken>((r, c) => capturedRequest = r)
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(@"{""candidates"": [{""content"": {""parts"": [{""text"": ""fixed""}]}}]}")
+                });
+
+            var resolver = new GeminiProResolver(_config, _httpClient);
+
+            // Act
+            await resolver.ResolveConflictAsync("conflict", "csharp");
+
+            // Assert
+            Assert.NotNull(capturedRequest);
+            Assert.NotNull(capturedRequest.RequestUri);
+            Assert.DoesNotContain($"key={_config.ApiKey}", capturedRequest.RequestUri.ToString());
+            Assert.True(capturedRequest.Headers.Contains("x-goog-api-key"));
+            Assert.Equal(_config.ApiKey, capturedRequest.Headers.GetValues("x-goog-api-key").First());
         }
 
         private void SetupMockResponse(HttpStatusCode statusCode, string content)

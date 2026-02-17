@@ -48,10 +48,16 @@ namespace TurboGit.Services
                 };
 
                 var jsonBody = JsonSerializer.Serialize(requestBody);
-                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={_config.ApiKey}";
+                var endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 
                 // 3. Make the API call
-                var response = await _httpClient.PostAsync(endpoint, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
+                var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                {
+                    Content = new StringContent(jsonBody, Encoding.UTF8, "application/json")
+                };
+                request.Headers.Add("x-goog-api-key", _config.ApiKey);
+
+                var response = await _httpClient.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode)
                 {
