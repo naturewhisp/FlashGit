@@ -41,7 +41,8 @@ namespace TurboGit.Services
             }
         }
 
-        private readonly GitHubClient _client = new GitHubClient(new ProductHeaderValue("TurboGit"));
+        private static readonly ProductHeaderValue _productHeader = new ProductHeaderValue("TurboGit");
+        private readonly GitHubClient _client = new GitHubClient(_productHeader);
 
         /// <summary>
         /// Gets the URL to initiate the GitHub OAuth login flow.
@@ -89,11 +90,10 @@ namespace TurboGit.Services
         /// <returns>An authenticated GitHubClient instance.</returns>
         public GitHubClient GetClient(string token)
         {
-            var authenticatedClient = new GitHubClient(new ProductHeaderValue("TurboGit"))
+            return new GitHubClient(_productHeader)
             {
                 Credentials = new Credentials(token)
             };
-            return authenticatedClient;
         }
     }
 }
