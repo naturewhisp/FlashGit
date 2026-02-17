@@ -32,7 +32,7 @@ namespace TurboGit.Tests.Services
             var service = new GitHubService();
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => service.GetGitHubLoginUrl());
+            var exception = Assert.Throws<InvalidOperationException>(() => service.GetGitHubLoginUrl("test-state"));
             Assert.Contains("TURBOGIT_GITHUB_CLIENT_ID", exception.Message);
         }
 
@@ -55,12 +55,14 @@ namespace TurboGit.Tests.Services
             // Arrange
             Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", "test-client-id");
             var service = new GitHubService();
+            string state = "test-state-123";
 
             // Act
-            var url = service.GetGitHubLoginUrl();
+            var url = service.GetGitHubLoginUrl(state);
 
             // Assert
             Assert.Contains("client_id=test-client-id", url);
+            Assert.Contains($"state={state}", url);
         }
 
         [Fact]

@@ -13,9 +13,10 @@ namespace TurboGit.Services
         /// <summary>
         /// Gets the URL to initiate the GitHub OAuth login flow.
         /// </summary>
+        /// <param name="state">The state parameter to prevent CSRF attacks.</param>
         /// <param name="redirectUri">The optional redirect URI. If null, the default is used.</param>
         /// <returns>The GitHub OAuth authorization URL.</returns>
-        string GetGitHubLoginUrl(string? redirectUri = null);
+        string GetGitHubLoginUrl(string state, string? redirectUri = null);
 
         /// <summary>
         /// Gets an access token from GitHub using the provided temporary code.

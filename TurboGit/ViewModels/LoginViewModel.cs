@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using TurboGit.Infrastructure;
+using TurboGit.Infrastructure.Security;
 using TurboGit.Services;
 
 namespace TurboGit.ViewModels
@@ -44,7 +45,8 @@ namespace TurboGit.ViewModels
                     listener.Prefixes.Add(redirectUri);
                     listener.Start();
 
-                    string authUrl = _gitHubService.GetGitHubLoginUrl(redirectUri);
+                    string state = OAuthStateGenerator.GenerateState();
+                    string authUrl = _gitHubService.GetGitHubLoginUrl(state, redirectUri);
 
                     // Open the user's default browser to the GitHub authorization page
                     Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
@@ -55,6 +57,21 @@ namespace TurboGit.ViewModels
 
                     // The 'code' is the temporary authorization code from GitHub
                     string code = request.QueryString.Get("code");
+                    string? returnedState = request.QueryString.Get("state");
+
+                    if (string.IsNullOrEmpty(returnedState) || returnedState != state)
+                    {
+                        StatusMessage = "Security Error: Invalid OAuth state.";
+
+                        var errResponse = context.Response;
+                        string errResponseString = "<html><head><title>TurboGit Auth Error</title></head><body>Authentication failed. Security check (CSRF) failed.</body></html>";
+                        byte[] errBuffer = System.Text.Encoding.UTF8.GetBytes(errResponseString);
+                        errResponse.ContentLength64 = errBuffer.Length;
+                        await errResponse.OutputStream.WriteAsync(errBuffer, 0, errBuffer.Length);
+                        errResponse.OutputStream.Close();
+                        listener.Stop();
+                        return;
+                    }
 
                     // Respond to the browser to close the page
                     var response = context.Response;
