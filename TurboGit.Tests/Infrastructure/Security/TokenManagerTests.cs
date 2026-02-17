@@ -14,9 +14,11 @@ namespace TurboGit.Tests.Infrastructure.Security
     {
         private readonly string _tokenFilePath;
         private readonly byte[] _legacyEntropy;
+        private readonly ITokenManager _tokenManager;
 
         public TokenManagerTests()
         {
+            _tokenManager = new TokenManager();
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             _tokenFilePath = Path.Combine(appDataPath, "TurboGit", "user.token");
             _legacyEntropy = Encoding.Unicode.GetBytes("TurboGitSaltValue");
@@ -46,8 +48,8 @@ namespace TurboGit.Tests.Infrastructure.Security
             string expectedToken = "test_token_123";
 
             // Act
-            TokenManager.SaveToken(expectedToken);
-            string? actualToken = TokenManager.GetToken();
+            _tokenManager.SaveToken(expectedToken);
+            string? actualToken = _tokenManager.GetToken();
 
             // Assert
             Assert.Equal(expectedToken, actualToken);
@@ -59,15 +61,15 @@ namespace TurboGit.Tests.Infrastructure.Security
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
 
             // Arrange
-            TokenManager.SaveToken("temp_token");
+            _tokenManager.SaveToken("temp_token");
             Assert.True(File.Exists(_tokenFilePath));
 
             // Act
-            TokenManager.DeleteToken();
+            _tokenManager.DeleteToken();
 
             // Assert
             Assert.False(File.Exists(_tokenFilePath));
-            Assert.Null(TokenManager.GetToken());
+            Assert.Null(_tokenManager.GetToken());
         }
 
         [Fact]
@@ -82,7 +84,7 @@ namespace TurboGit.Tests.Infrastructure.Security
             if (File.Exists(_tokenFilePath)) File.Delete(_tokenFilePath);
 
             // Act
-            var token = TokenManager.GetToken();
+            var token = _tokenManager.GetToken();
 
             // Assert
             Assert.Null(token);
@@ -113,7 +115,7 @@ namespace TurboGit.Tests.Infrastructure.Security
             File.WriteAllBytes(_tokenFilePath, encryptedData);
 
             // Act
-            string? result = TokenManager.GetToken();
+            string? result = _tokenManager.GetToken();
 
             // Assert
             // If the fix works (removing entropy usage), this should return null because

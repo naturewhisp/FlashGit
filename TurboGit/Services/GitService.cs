@@ -23,6 +23,16 @@ namespace TurboGit.Services
     public class GitService : IGitService
     {
         public const string DefaultRemoteName = "origin";
+        private readonly ITokenManager _tokenManager;
+
+        public GitService() : this(new TokenManager())
+        {
+        }
+
+        public GitService(ITokenManager tokenManager)
+        {
+            _tokenManager = tokenManager;
+        }
 
         public Task<IEnumerable<GitCommit>> GetCommitHistoryAsync(string repoPath, int limit = 100)
         {
@@ -178,7 +188,7 @@ namespace TurboGit.Services
                         // Set up credential provider
                         options.CredentialsProvider = (_url, _user, _cred) =>
                         {
-                            var token = TokenManager.GetToken();
+                            var token = _tokenManager.GetToken();
                             if (!string.IsNullOrEmpty(token))
                             {
                                 return new UsernamePasswordCredentials

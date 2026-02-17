@@ -77,11 +77,6 @@ namespace TurboGit.Services
             }
             var token = await _client.Oauth.CreateAccessToken(request);
 
-            if (!string.IsNullOrEmpty(token?.AccessToken))
-            {
-                TokenManager.SaveToken(token.AccessToken);
-            }
-
             return token;
         }
 

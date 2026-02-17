@@ -15,13 +15,17 @@ namespace TurboGit.ViewModels
     public partial class LoginViewModel : ObservableObject
     {
         private readonly IGitHubService _gitHubService;
+        private readonly ITokenManager _tokenManager;
+        private readonly Action _onLoginSuccess;
 
         [ObservableProperty]
         private string _statusMessage;
 
-        public LoginViewModel(IGitHubService gitHubService)
+        public LoginViewModel(IGitHubService gitHubService, ITokenManager tokenManager, Action onLoginSuccess)
         {
             _gitHubService = gitHubService;
+            _tokenManager = tokenManager;
+            _onLoginSuccess = onLoginSuccess;
             StatusMessage = "Please log in with GitHub to continue.";
         }
 
@@ -90,8 +94,9 @@ namespace TurboGit.ViewModels
 
                         if (token != null && !string.IsNullOrEmpty(token.AccessToken))
                         {
-                            // TODO: Securely store the token and navigate to the main app view
-                            StatusMessage = $"Login successful! Token: {token.AccessToken.Substring(0, 8)}...";
+                            _tokenManager.SaveToken(token.AccessToken);
+                            StatusMessage = "Login successful!";
+                            _onLoginSuccess?.Invoke();
                         }
                         else
                         {
