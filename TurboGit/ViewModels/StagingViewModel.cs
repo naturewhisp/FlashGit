@@ -48,7 +48,7 @@ namespace TurboGit.ViewModels
             UnstagedFiles.Clear();
             StagedFiles.Clear();
 
-            var statuses = await _gitService.GetFileStatusAsync(_currentRepoPath);
+            var statuses = await _gitService.GetFileStatusAsync(_currentRepoPath!);
             foreach (var status in statuses)
             {
                 if (status.IsStaged)
@@ -84,7 +84,7 @@ namespace TurboGit.ViewModels
             }
 
             // Load the diff for the selected file.
-            DiffContent = await _gitService.GetFileDiffAsync(_currentRepoPath, value.FilePath, value.IsStaged);
+            DiffContent = await _gitService.GetFileDiffAsync(_currentRepoPath!, value.FilePath, value.IsStaged);
         }
     }
 }

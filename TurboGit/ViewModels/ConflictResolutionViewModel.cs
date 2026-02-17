@@ -45,7 +45,7 @@ namespace TurboGit.ViewModels
         // In a real app, this would be injected via DI.
         public ConflictResolutionViewModel() : this(new GeminiProResolver(new AiServiceConfig
             {
-                ApiKey = Environment.GetEnvironmentVariable("TURBOGIT_GEMINI_API_KEY") ?? string.Empty
+                ApiKey = Environment.GetEnvironmentVariable("TURBOGIT_GEMINI_API_KEY") ?? "MISSING_KEY"
             }))
         {
         }
@@ -53,6 +53,14 @@ namespace TurboGit.ViewModels
         public ConflictResolutionViewModel(IAiResolverService aiResolver)
         {
             _aiResolver = aiResolver;
+            // Explicitly initialize to satisfy compiler if needed, though they are already initialized at declaration
+            _preConflictContent = string.Empty;
+            _postConflictContent = string.Empty;
+            _filePath = string.Empty;
+            _currentChanges = string.Empty;
+            _incomingChanges = string.Empty;
+            _resolvedContent = string.Empty;
+            _errorMessage = string.Empty;
         }
 
         /// <summary>

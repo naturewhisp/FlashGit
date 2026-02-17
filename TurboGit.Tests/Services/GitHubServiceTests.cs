@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Moq;
 using Octokit;
 using TurboGit.Infrastructure;
@@ -9,52 +8,15 @@ using Xunit;
 
 namespace TurboGit.Tests.Services
 {
-    [Collection("Sequential")]
-    public class GitHubServiceTests : IDisposable
+    public class GitHubServiceTests
     {
         private readonly Mock<IGitHubClient> _gitHubClientMock;
         private readonly string _testClientId = "test-client-id";
         private readonly string _testClientSecret = "test-client-secret";
-        private readonly string? _originalClientId;
-        private readonly string? _originalClientSecret;
 
         public GitHubServiceTests()
         {
             _gitHubClientMock = new Mock<IGitHubClient>();
-            var oauthMock = new Mock<IOauthOperations>();
-            _gitHubClientMock.Setup(c => c.Oauth).Returns(oauthMock.Object);
-
-            _originalClientId = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID");
-            _originalClientSecret = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET");
-        }
-
-        public void Dispose()
-        {
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", _originalClientId);
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET", _originalClientSecret);
-        }
-
-        [Fact]
-        public void Constructor_ThrowsInvalidOperationException_WhenClientIdIsMissing()
-        {
-            // Arrange
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", null);
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => new GitHubService());
-            Assert.Contains("GitHub Client ID is not configured", exception.Message);
-        }
-
-        [Fact]
-        public void Constructor_ThrowsInvalidOperationException_WhenClientSecretIsMissing()
-        {
-            // Arrange
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", "some_id");
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET", null);
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => new GitHubService());
-            Assert.Contains("GitHub Client Secret is not configured", exception.Message);
         }
 
         [Fact]

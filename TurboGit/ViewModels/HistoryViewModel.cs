@@ -68,7 +68,7 @@ namespace TurboGit.ViewModels
                 // Ensure the directory exists (it should, but safety first)
                 Directory.CreateDirectory(downloadsPath);
 
-                await _zipExportService.ExportCommitAsZipAsync(_currentRepoPath, commit.Sha, fullPath);
+                await _zipExportService.ExportCommitAsZipAsync(_currentRepoPath!, commit.Sha, fullPath);
 
                 // In a real app, we would show a toast notification or message box.
                 Console.WriteLine($"Successfully exported commit {commit.Sha} to {fullPath}");

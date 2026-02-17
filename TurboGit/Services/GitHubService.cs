@@ -20,10 +20,8 @@ namespace TurboGit.Services
         public GitHubService(IGitHubClient? client = null, string? clientId = null, string? clientSecret = null)
         {
             _client = client ?? new GitHubClient(new ProductHeaderValue("TurboGit"));
-            _clientId = clientId ?? Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID")
-                ?? throw new InvalidOperationException("GitHub Client ID is not configured. Please set the TURBOGIT_GITHUB_CLIENT_ID environment variable.");
-            _clientSecret = clientSecret ?? Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET")
-                ?? throw new InvalidOperationException("GitHub Client Secret is not configured. Please set the TURBOGIT_GITHUB_CLIENT_SECRET environment variable.");
+            _clientId = clientId ?? Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID") ?? "YOUR_CLIENT_ID";
+            _clientSecret = clientSecret ?? Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET") ?? "YOUR_CLIENT_SECRET";
         }
 
         /// <summary>

@@ -16,7 +16,7 @@ namespace TurboGit.ViewModels
         private readonly IGitHubService _gitHubService;
 
         [ObservableProperty]
-        private string _statusMessage;
+        private string _statusMessage = string.Empty;
 
         public LoginViewModel(IGitHubService gitHubService)
         {
@@ -69,7 +69,7 @@ namespace TurboGit.ViewModels
                     if (!string.IsNullOrEmpty(code))
                     {
                         StatusMessage = "Exchanging code for access token...";
-                        var token = await _gitHubService.GetAccessToken(code, redirectUri);
+                        var token = await _gitHubService.GetAccessToken(code!, redirectUri);
 
                         if (token != null && !string.IsNullOrEmpty(token.AccessToken))
                         {
