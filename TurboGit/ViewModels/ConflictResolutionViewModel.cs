@@ -16,17 +16,17 @@ namespace TurboGit.ViewModels
     public partial class ConflictResolutionViewModel : ObservableObject
     {
         private readonly IAiResolverService _aiResolver;
-        private string _preConflictContent = string.Empty;
-        private string _postConflictContent = string.Empty;
+        private string _preConflictContent;
+        private string _postConflictContent;
         
         [ObservableProperty]
-        private string _filePath = string.Empty;
+        private string _filePath;
 
         [ObservableProperty]
-        private string _currentChanges = string.Empty;
+        private string _currentChanges;
         
         [ObservableProperty]
-        private string _incomingChanges = string.Empty;
+        private string _incomingChanges;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsNotBusy))]
@@ -34,10 +34,10 @@ namespace TurboGit.ViewModels
         
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsResolved))]
-        private string _resolvedContent = string.Empty;
+        private string _resolvedContent;
 
         [ObservableProperty]
-        private string _errorMessage = string.Empty;
+        private string _errorMessage;
 
         public bool IsNotBusy => !IsBusy;
         public bool IsResolved => !string.IsNullOrEmpty(ResolvedContent) && !IsBusy;
@@ -45,7 +45,7 @@ namespace TurboGit.ViewModels
         // In a real app, this would be injected via DI.
         public ConflictResolutionViewModel() : this(new GeminiProResolver(new AiServiceConfig
             {
-                ApiKey = Environment.GetEnvironmentVariable("TURBOGIT_GEMINI_API_KEY") ?? "MISSING_KEY"
+                ApiKey = Environment.GetEnvironmentVariable("TURBOGIT_GEMINI_API_KEY")
             }))
         {
         }
@@ -53,14 +53,6 @@ namespace TurboGit.ViewModels
         public ConflictResolutionViewModel(IAiResolverService aiResolver)
         {
             _aiResolver = aiResolver;
-            // Explicitly initialize to satisfy compiler if needed, though they are already initialized at declaration
-            _preConflictContent = string.Empty;
-            _postConflictContent = string.Empty;
-            _filePath = string.Empty;
-            _currentChanges = string.Empty;
-            _incomingChanges = string.Empty;
-            _resolvedContent = string.Empty;
-            _errorMessage = string.Empty;
         }
 
         /// <summary>
