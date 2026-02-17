@@ -31,10 +31,6 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         private StagingViewModel _stagingViewModel;
 
-        // Property to expose error messages to the view (if we had a notification system)
-        [ObservableProperty]
-        private string? _errorMessage;
-
         /// <summary>
         /// Delegate to request folder selection from the View.
         /// </summary>
@@ -79,8 +75,7 @@ namespace TurboGit.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    ErrorMessage = $"Failed to add repository: {ex.Message}";
-                    Console.WriteLine(ErrorMessage);
+                    Console.WriteLine($"Failed to add repository: {ex.Message}");
                 }
             }
         }
@@ -113,8 +108,7 @@ namespace TurboGit.ViewModels
             catch (Exception ex)
             {
                 // In a real app, this would be a user-facing error message (Toast, Dialog, etc.)
-                ErrorMessage = $"Failed to load repositories: {ex.Message}";
-                Console.WriteLine(ErrorMessage);
+                Console.WriteLine($"Failed to load repositories: {ex.Message}");
             }
         }
 
