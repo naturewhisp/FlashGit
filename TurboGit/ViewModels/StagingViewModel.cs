@@ -1,7 +1,9 @@
 // TurboGit/ViewModels/StagingViewModel.cs
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using TurboGit.Core.Models;
 using TurboGit.Services;
@@ -25,9 +27,9 @@ namespace TurboGit.ViewModels
         [ObservableProperty]
         private string? _diffContent;
 
-        public StagingViewModel()
+        public StagingViewModel(IGitService gitService = null)
         {
-            _gitService = new GitService();
+            _gitService = gitService ?? new GitService();
             _unstagedFiles = new ObservableCollection<GitFileStatus>();
             _stagedFiles = new ObservableCollection<GitFileStatus>();
             _diffContent = string.Empty;
@@ -45,17 +47,11 @@ namespace TurboGit.ViewModels
         {
             if (string.IsNullOrEmpty(_currentRepoPath)) return;
 
-            UnstagedFiles.Clear();
-            StagedFiles.Clear();
-
             var statuses = await _gitService.GetFileStatusAsync(_currentRepoPath!);
-            foreach (var status in statuses)
-            {
-                if (status.IsStaged)
-                    StagedFiles.Add(status);
-                else
-                    UnstagedFiles.Add(status);
-            }
+            var statusList = statuses.ToList();
+
+            StagedFiles = new ObservableCollection<GitFileStatus>(statusList.Where(s => s.IsStaged));
+            UnstagedFiles = new ObservableCollection<GitFileStatus>(statusList.Where(s => !s.IsStaged));
         }
 
         [RelayCommand]
