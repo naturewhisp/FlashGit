@@ -62,7 +62,6 @@ namespace TurboGit.ViewModels
                     if (string.IsNullOrEmpty(returnedState) || returnedState != state)
                     {
                         StatusMessage = "Security Error: Invalid OAuth state.";
-                        Console.WriteLine($"[Security] OAuth state mismatch. Expected: {state}, Received: {returnedState}");
 
                         var errResponse = context.Response;
                         string errResponseString = "<html><head><title>TurboGit Auth Error</title></head><body>Authentication failed. Security check (CSRF) failed.</body></html>";
