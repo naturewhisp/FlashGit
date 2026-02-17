@@ -62,5 +62,22 @@ namespace TurboGit.Tests.Services
             // Assert
             Assert.Contains("client_id=test-client-id", url);
         }
+
+        [Fact]
+        public void GetClient_ShouldReturnClientWithCorrectCredentials()
+        {
+            // Arrange
+            var service = new GitHubService();
+            var token = "test-token";
+
+            // Act
+            var client = service.GetClient(token);
+
+            // Assert
+            var connection = (Connection)client.Connection;
+            Assert.StartsWith("TurboGit", connection.UserAgent);
+            Assert.Equal(token, client.Credentials.Password);
+            Assert.Equal(AuthenticationType.Oauth, client.Credentials.AuthenticationType);
+        }
     }
 }
