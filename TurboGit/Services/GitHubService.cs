@@ -48,14 +48,16 @@ namespace TurboGit.Services
         /// Gets the URL to initiate the GitHub OAuth login flow.
         /// This URL directs the user to GitHub to authorize the application.
         /// </summary>
+        /// <param name="state">The state parameter to prevent CSRF attacks.</param>
         /// <param name="redirectUri">The optional redirect URI. If null, the default is used.</param>
         /// <returns>The GitHub OAuth authorization URL.</returns>
-        public string GetGitHubLoginUrl(string? redirectUri = null)
+        public string GetGitHubLoginUrl(string state, string? redirectUri = null)
         {
             var request = new OauthLoginRequest(ClientId)
             {
                 Scopes = { "repo", "user" }, // Request access to repositories and user profile
-                RedirectUri = new Uri(redirectUri ?? Constants.GitHubOAuthCallbackUrl) // Local listener for the callback
+                RedirectUri = new Uri(redirectUri ?? Constants.GitHubOAuthCallbackUrl), // Local listener for the callback
+                State = state
             };
             return _client.Oauth.GetGitHubLoginUrl(request).ToString();
         }
