@@ -65,6 +65,44 @@ namespace TurboGit.Tests
         }
 
         [Fact]
+        public async Task FetchAsync_WithSpecificRemote_FetchesFromThatRemote()
+        {
+            // Arrange
+            // 1. Create a commit in the remote repo
+            using (var remoteRepo = new Repository(_tempRemotePath))
+            {
+                var signature = new Signature("Remote User", "remote@example.com", DateTimeOffset.Now);
+                File.WriteAllText(Path.Combine(_tempRemotePath, "remote_file_upstream.txt"), "remote content upstream");
+                Commands.Stage(remoteRepo, "remote_file_upstream.txt");
+                remoteRepo.Commit("Upstream commit", signature, signature);
+            }
+
+            // 2. Add the remote to the local repo with a custom name
+            using (var localRepo = new Repository(_tempRepoPath))
+            {
+                localRepo.Network.Remotes.Add("upstream", _tempRemotePath);
+            }
+
+            // Act
+            await _gitService.FetchAsync(_tempRepoPath, "upstream");
+
+            // Assert
+            using (var localRepo = new Repository(_tempRepoPath))
+            {
+                var remoteBranch = localRepo.Branches["upstream/master"];
+                Assert.NotNull(remoteBranch);
+                Assert.Equal("Upstream commit", remoteBranch.Tip.MessageShort);
+            }
+        }
+
+        [Fact]
+        public async Task FetchAsync_WithInvalidRemote_ThrowsArgumentException()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _gitService.FetchAsync(_tempRepoPath, "invalid_remote"));
+        }
+
+        [Fact]
         public async Task GetCommitHistoryAsync_ReturnsCorrectCommits()
         {
             // Arrange
