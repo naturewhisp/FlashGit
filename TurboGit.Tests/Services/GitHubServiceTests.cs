@@ -1,5 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Moq;
+using Octokit;
+using TurboGit.Infrastructure;
 using TurboGit.Services;
 using Xunit;
 
@@ -8,11 +12,19 @@ namespace TurboGit.Tests.Services
     [Collection("Sequential")]
     public class GitHubServiceTests : IDisposable
     {
+        private readonly Mock<IGitHubClient> _gitHubClientMock;
+        private readonly Mock<IOauthOperations> _oauthOperationsMock;
+        private readonly string _testClientId = "test-client-id";
+        private readonly string _testClientSecret = "test-client-secret";
         private readonly string? _originalClientId;
         private readonly string? _originalClientSecret;
 
         public GitHubServiceTests()
         {
+            _gitHubClientMock = new Mock<IGitHubClient>();
+            _oauthOperationsMock = new Mock<IOauthOperations>();
+            _gitHubClientMock.Setup(c => c.Oauth).Returns(_oauthOperationsMock.Object);
+
             _originalClientId = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID");
             _originalClientSecret = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET");
         }
@@ -24,55 +36,75 @@ namespace TurboGit.Tests.Services
         }
 
         [Fact]
-        public void GetGitHubLoginUrl_ThrowsInvalidOperationException_WhenClientIdIsMissing()
+        public void Constructor_ThrowsInvalidOperationException_WhenClientIdIsMissing()
         {
             // Arrange
             Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", null);
-            var service = new GitHubService();
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => service.GetGitHubLoginUrl());
+            var exception = Assert.Throws<InvalidOperationException>(() => new GitHubService());
             Assert.Contains("GitHub Client ID is not configured", exception.Message);
         }
 
         [Fact]
-        public async Task GetAccessToken_ThrowsInvalidOperationException_WhenClientIdIsMissing()
-        {
-            // Arrange
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", null);
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET", "some_secret");
-            var service = new GitHubService();
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetAccessToken("code"));
-            Assert.Contains("GitHub Client ID is not configured", exception.Message);
-        }
-
-        [Fact]
-        public async Task GetAccessToken_ThrowsInvalidOperationException_WhenClientSecretIsMissing()
+        public void Constructor_ThrowsInvalidOperationException_WhenClientSecretIsMissing()
         {
             // Arrange
             Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", "some_id");
             Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET", null);
-            var service = new GitHubService();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetAccessToken("code"));
+            var exception = Assert.Throws<InvalidOperationException>(() => new GitHubService());
             Assert.Contains("GitHub Client Secret is not configured", exception.Message);
         }
 
         [Fact]
-        public void GetGitHubLoginUrl_ReturnsUrl_WhenClientIdIsPresent()
+        public void GetGitHubLoginUrl_WithDefaultRedirectUri_ReturnsCorrectUrl()
         {
             // Arrange
-            Environment.SetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID", "test_id");
-            var service = new GitHubService();
+            var expectedUrl = new Uri("https://github.com/login/oauth/authorize?client_id=test-client-id&scope=repo%20user&redirect_uri=http%3A%2F%2Flocalhost%3A8989%2Fcallback%2F");
+
+            _oauthOperationsMock.Setup(o => o.GetGitHubLoginUrl(It.IsAny<OauthLoginRequest>()))
+                .Returns(expectedUrl);
+
+            var service = new GitHubService(_gitHubClientMock.Object, _testClientId, _testClientSecret);
 
             // Act
-            var url = service.GetGitHubLoginUrl();
+            var result = service.GetGitHubLoginUrl();
 
             // Assert
-            Assert.Contains("client_id=test_id", url);
+            Assert.Equal(expectedUrl.ToString(), result);
+            _oauthOperationsMock.Verify(o => o.GetGitHubLoginUrl(It.Is<OauthLoginRequest>(r =>
+                r.ClientId == _testClientId &&
+                r.Scopes.Contains("repo") &&
+                r.Scopes.Contains("user") &&
+                r.RedirectUri.ToString() == Constants.GitHubOAuthCallbackUrl
+            )), Times.Once);
+        }
+
+        [Fact]
+        public void GetGitHubLoginUrl_WithCustomRedirectUri_ReturnsCorrectUrl()
+        {
+            // Arrange
+            var customRedirectUri = "http://127.0.0.1:1234/callback/";
+            var expectedUrl = new Uri($"https://github.com/login/oauth/authorize?client_id=test-client-id&scope=repo%20user&redirect_uri={Uri.EscapeDataString(customRedirectUri)}");
+
+            _oauthOperationsMock.Setup(o => o.GetGitHubLoginUrl(It.IsAny<OauthLoginRequest>()))
+                .Returns(expectedUrl);
+
+            var service = new GitHubService(_gitHubClientMock.Object, _testClientId, _testClientSecret);
+
+            // Act
+            var result = service.GetGitHubLoginUrl(customRedirectUri);
+
+            // Assert
+            Assert.Equal(expectedUrl.ToString(), result);
+            _oauthOperationsMock.Verify(o => o.GetGitHubLoginUrl(It.Is<OauthLoginRequest>(r =>
+                r.ClientId == _testClientId &&
+                r.Scopes.Contains("repo") &&
+                r.Scopes.Contains("user") &&
+                r.RedirectUri.ToString() == customRedirectUri
+            )), Times.Once);
         }
     }
 }

@@ -30,6 +30,6 @@ namespace TurboGit.Services
         /// </summary>
         /// <param name="token">The OAuth access token.</param>
         /// <returns>An authenticated GitHubClient instance.</returns>
-        GitHubClient GetClient(string token);
+        IGitHubClient GetClient(string token);
     }
 }
