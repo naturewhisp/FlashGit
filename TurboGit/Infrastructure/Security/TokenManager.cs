@@ -11,12 +11,12 @@ namespace TurboGit.Infrastructure.Security
     /// For production applications, consider using platform-specific credential managers
     /// like Windows Credential Manager (PasswordVault) or macOS KeyChain.
     /// </summary>
-    public static class TokenManager
+    public class TokenManager : ITokenManager
     {
         /// <summary>
         /// Gets the path to the file where the encrypted token will be stored.
         /// </summary>
-        private static string GetTokenFilePath()
+        private string GetTokenFilePath()
         {
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var turboGitFolder = Path.Combine(appDataPath, "TurboGit");
@@ -29,7 +29,7 @@ namespace TurboGit.Infrastructure.Security
         /// The token is encrypted using the Data Protection API (DPAPI) for the current user scope.
         /// </summary>
         /// <param name="token">The token to save.</param>
-        public static void SaveToken(string token)
+        public void SaveToken(string token)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -61,7 +61,7 @@ namespace TurboGit.Infrastructure.Security
         /// Retrieves the authentication token from local storage.
         /// </summary>
         /// <returns>The decrypted token, or null if it doesn't exist or fails to decrypt</returns>
-        public static string? GetToken()
+        public string? GetToken()
         {
             var tokenFilePath = GetTokenFilePath();
             if (!File.Exists(tokenFilePath))
@@ -88,7 +88,7 @@ namespace TurboGit.Infrastructure.Security
         /// <summary>
         /// Deletes the stored token.
         /// </summary>
-        public static void DeleteToken()
+        public void DeleteToken()
         {
             var tokenFilePath = GetTokenFilePath();
             if (File.Exists(tokenFilePath))

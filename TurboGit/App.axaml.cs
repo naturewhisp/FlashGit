@@ -21,8 +21,7 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow
             {
-                // Set the main content to our new Login View
-                Content = new LoginView()
+                DataContext = new MainWindowViewModel(new Services.RepositoryService(), new Infrastructure.Security.TokenManager())
             };
         }
 

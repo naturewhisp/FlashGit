@@ -18,7 +18,10 @@ namespace TurboGit.Tests.ViewModels
             mockRepoService.Setup(s => s.GetRepositoriesAsync())
                 .ReturnsAsync(new List<LocalRepository>());
 
-            var viewModel = new MainWindowViewModel(mockRepoService.Object);
+            var mockTokenManager = new Mock<TurboGit.Infrastructure.Security.ITokenManager>();
+            mockTokenManager.Setup(t => t.GetToken()).Returns("dummy_token");
+
+            var viewModel = new MainWindowViewModel(mockRepoService.Object, mockTokenManager.Object);
 
             // Mock the folder selection
             string selectedPath = "/new/repo/path";
@@ -41,7 +44,10 @@ namespace TurboGit.Tests.ViewModels
             mockRepoService.Setup(s => s.GetRepositoriesAsync())
                 .ReturnsAsync(new List<LocalRepository>());
 
-            var viewModel = new MainWindowViewModel(mockRepoService.Object);
+            var mockTokenManager = new Mock<TurboGit.Infrastructure.Security.ITokenManager>();
+            mockTokenManager.Setup(t => t.GetToken()).Returns("dummy_token");
+
+            var viewModel = new MainWindowViewModel(mockRepoService.Object, mockTokenManager.Object);
 
             // Pass nulls for optional arguments to satisfy Moq's constructor resolution
             var mockHistoryViewModel = new Mock<HistoryViewModel>((IGitService?)null, (IZipExportService?)null);

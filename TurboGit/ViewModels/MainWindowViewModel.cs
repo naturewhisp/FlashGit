@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using TurboGit.Core.Models;
 using TurboGit.Services;
+using TurboGit.Infrastructure.Security;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
@@ -18,32 +19,61 @@ namespace TurboGit.ViewModels
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly IRepositoryService _repositoryService;
+        private readonly ITokenManager _tokenManager;
 
         [ObservableProperty]
-        private ObservableCollection<LocalRepository> _repositoryList;
+        private ObservableCollection<LocalRepository>? _repositoryList;
 
         [ObservableProperty]
         private LocalRepository? _selectedRepository;
 
         [ObservableProperty]
-        private HistoryViewModel _historyViewModel;
+        private HistoryViewModel? _historyViewModel;
 
         [ObservableProperty]
-        private StagingViewModel _stagingViewModel;
+        private StagingViewModel? _stagingViewModel;
+
+        [ObservableProperty]
+        private bool _isLoggedIn;
+
+        [ObservableProperty]
+        private LoginViewModel? _loginViewModel;
 
         /// <summary>
         /// Delegate to request folder selection from the View.
         /// </summary>
         public Func<Task<string?>>? RequestFolderSelection { get; set; }
 
-        public MainWindowViewModel() : this(new RepositoryService())
+        public MainWindowViewModel() : this(new RepositoryService(), new TokenManager())
         {
         }
 
-        public MainWindowViewModel(IRepositoryService repositoryService)
+        public MainWindowViewModel(IRepositoryService repositoryService, ITokenManager tokenManager)
         {
             _repositoryService = repositoryService;
+            _tokenManager = tokenManager;
 
+            var token = _tokenManager.GetToken();
+            if (!string.IsNullOrEmpty(token))
+            {
+                IsLoggedIn = true;
+                InitializeDashboard();
+            }
+            else
+            {
+                IsLoggedIn = false;
+                LoginViewModel = new LoginViewModel(new GitHubService(), _tokenManager, OnLoginSuccess);
+            }
+        }
+
+        private void OnLoginSuccess()
+        {
+            IsLoggedIn = true;
+            InitializeDashboard();
+        }
+
+        private void InitializeDashboard()
+        {
             RepositoryList = new ObservableCollection<LocalRepository>();
 
             // Instantiate the child ViewModels
@@ -69,7 +99,7 @@ namespace TurboGit.ViewModels
                         var newRepo = new LocalRepository { Name = name, Path = path };
 
                         await _repositoryService.AddRepositoryAsync(newRepo);
-                        RepositoryList.Add(newRepo);
+                        RepositoryList?.Add(newRepo);
                         SelectedRepository = newRepo;
                     }
                 }
@@ -99,10 +129,10 @@ namespace TurboGit.ViewModels
                     repos.Add(defaultRepo);
                 }
 
-                RepositoryList.Clear();
+                RepositoryList?.Clear();
                 foreach (var repo in repos)
                 {
-                    RepositoryList.Add(repo);
+                    RepositoryList?.Add(repo);
                 }
             }
             catch (Exception ex)
@@ -122,6 +152,9 @@ namespace TurboGit.ViewModels
             {
                 try
                 {
+                    if (HistoryViewModel == null || StagingViewModel == null)
+                        return;
+
                     // Await the async loading tasks to ensure they complete and handle exceptions.
                     // Load both History and Staging concurrently for better performance.
                     var loadHistoryTask = HistoryViewModel.LoadCommits(value.Path);

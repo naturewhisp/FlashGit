@@ -11,9 +11,6 @@ namespace TurboGit.Views
         public LoginView()
         {
             InitializeComponent();
-            // In a real app with a DI container, you'd inject this.
-            // For simplicity, we new it up here.
-            DataContext = new LoginViewModel(new GitHubService());
         }
     }
 }
