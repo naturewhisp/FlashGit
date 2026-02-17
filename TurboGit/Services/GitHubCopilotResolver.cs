@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,14 +11,12 @@ namespace TurboGit.Services
     public class GitHubCopilotResolver : IAiResolverService
     {
         private readonly AiServiceConfig _config;
-        private readonly HttpClient _httpClient;
 
         public string Name => "GitHub Copilot";
 
         public GitHubCopilotResolver(AiServiceConfig config)
         {
             _config = config;
-            _httpClient = new HttpClient();
             // Copilot auth is typically more complex, often using a GitHub token.
             // _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _config.ApiKey);
         }
