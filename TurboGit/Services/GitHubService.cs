@@ -14,9 +14,32 @@ namespace TurboGit.Services
     public class GitHubService : IGitHubService
     {
         // IMPORTANT: In a real application, these should be stored securely
-        // and not hardcoded. For this example, we'll retrieve them from environment variables.
-        private static string ClientId => Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID") ?? "YOUR_CLIENT_ID";
-        private static string ClientSecret => Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET") ?? "YOUR_CLIENT_SECRET";
+        // and not hardcoded. We retrieve them from environment variables and fail if not present.
+        private static string ClientId
+        {
+            get
+            {
+                var clientId = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID");
+                if (string.IsNullOrEmpty(clientId))
+                {
+                    throw new InvalidOperationException("GitHub Client ID is not configured. Please set the TURBOGIT_GITHUB_CLIENT_ID environment variable.");
+                }
+                return clientId;
+            }
+        }
+
+        private static string ClientSecret
+        {
+            get
+            {
+                var clientSecret = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET");
+                if (string.IsNullOrEmpty(clientSecret))
+                {
+                    throw new InvalidOperationException("GitHub Client Secret is not configured. Please set the TURBOGIT_GITHUB_CLIENT_SECRET environment variable.");
+                }
+                return clientSecret;
+            }
+        }
 
         private readonly GitHubClient _client = new GitHubClient(new ProductHeaderValue("TurboGit"));
 
