@@ -16,12 +16,14 @@ namespace TurboGit.Services
         Task<IEnumerable<GitFileStatus>> GetFileStatusAsync(string repoPath);
         Task StageFileAsync(string repoPath, string filePath);
         Task UnstageFileAsync(string repoPath, string filePath);
-        Task FetchAsync(string repoPath);
+        Task FetchAsync(string repoPath, string? remoteName = null);
         Task<string> GetFileDiffAsync(string repoPath, string filePath, bool staged);
     }
 
     public class GitService : IGitService
     {
+        public const string DefaultRemoteName = "origin";
+
         public Task<IEnumerable<GitCommit>> GetCommitHistoryAsync(string repoPath, int limit = 100)
         {
             return Task.Run(() =>
@@ -144,17 +146,29 @@ namespace TurboGit.Services
             });
         }
 
-        public Task FetchAsync(string repoPath)
+        public Task FetchAsync(string repoPath, string? remoteName = null)
         {
             return Task.Run(() =>
             {
                 using (var repo = new Repository(repoPath))
                 {
-                    var remote = repo.Network.Remotes["origin"];
-                    if (remote == null)
+                    Remote remote;
+                    if (!string.IsNullOrEmpty(remoteName))
                     {
-                        // Try fallback to the first remote if origin doesn't exist
-                        remote = repo.Network.Remotes.FirstOrDefault();
+                        remote = repo.Network.Remotes[remoteName];
+                        if (remote == null)
+                        {
+                            throw new ArgumentException($"Remote '{remoteName}' not found in repository.", nameof(remoteName));
+                        }
+                    }
+                    else
+                    {
+                        remote = repo.Network.Remotes[DefaultRemoteName];
+                        if (remote == null)
+                        {
+                            // Try fallback to the first remote if default remote doesn't exist
+                            remote = repo.Network.Remotes.FirstOrDefault();
+                        }
                     }
 
                     if (remote != null)
