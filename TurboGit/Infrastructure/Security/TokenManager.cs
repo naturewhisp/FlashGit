@@ -13,11 +13,6 @@ namespace TurboGit.Infrastructure.Security
     /// </summary>
     public static class TokenManager
     {
-        // A basic, hardcoded entropy is not ideal but serves for this example.
-        // In a real-world scenario, this should be managed more securely,
-        // perhaps derived from a machine-specific identifier.
-        private static readonly byte[] s_entropy = Encoding.Unicode.GetBytes("TurboGitSaltValue");
-
         /// <summary>
         /// Gets the path to the file where the encrypted token will be stored.
         /// </summary>
@@ -48,7 +43,9 @@ namespace TurboGit.Infrastructure.Security
             {
                 // Encrypt the data using DataProtectionScope.CurrentUser.
                 // This means only the current user on the current machine can decrypt the data.
-                var encryptedData = ProtectedData.Protect(tokenBytes, s_entropy, DataProtectionScope.CurrentUser);
+                // We use null for entropy because we do not have a secure mechanism to store a secondary secret.
+                // Relying on user account isolation provided by the OS is safer than using a hardcoded secret.
+                var encryptedData = ProtectedData.Protect(tokenBytes, null, DataProtectionScope.CurrentUser);
                 File.WriteAllBytes(GetTokenFilePath(), encryptedData);
             }
             catch (Exception ex)
@@ -75,8 +72,8 @@ namespace TurboGit.Infrastructure.Security
             try
             {
                 var encryptedData = File.ReadAllBytes(tokenFilePath);
-                // Decrypt the data using the same scope and entropy.
-                var decryptedData = ProtectedData.Unprotect(encryptedData, s_entropy, DataProtectionScope.CurrentUser);
+                // Decrypt the data using the same scope.
+                var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
                 return Encoding.UTF8.GetString(decryptedData);
             }
             catch (Exception ex)
