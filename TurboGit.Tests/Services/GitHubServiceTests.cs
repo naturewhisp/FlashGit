@@ -13,7 +13,6 @@ namespace TurboGit.Tests.Services
     public class GitHubServiceTests : IDisposable
     {
         private readonly Mock<IGitHubClient> _gitHubClientMock;
-        private readonly Mock<IOAuthOperations> _oauthOperationsMock;
         private readonly string _testClientId = "test-client-id";
         private readonly string _testClientSecret = "test-client-secret";
         private readonly string? _originalClientId;
@@ -22,8 +21,8 @@ namespace TurboGit.Tests.Services
         public GitHubServiceTests()
         {
             _gitHubClientMock = new Mock<IGitHubClient>();
-            _oauthOperationsMock = new Mock<IOAuthOperations>();
-            _gitHubClientMock.Setup(c => c.Oauth).Returns(_oauthOperationsMock.Object);
+            var oauthMock = new Mock<IOauthOperations>();
+            _gitHubClientMock.Setup(c => c.Oauth).Returns(oauthMock.Object);
 
             _originalClientId = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID");
             _originalClientSecret = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_SECRET");
@@ -64,7 +63,7 @@ namespace TurboGit.Tests.Services
             // Arrange
             var expectedUrl = new Uri("https://github.com/login/oauth/authorize?client_id=test-client-id&scope=repo%20user&redirect_uri=http%3A%2F%2Flocalhost%3A8989%2Fcallback%2F");
 
-            _oauthOperationsMock.Setup(o => o.GetGitHubLoginUrl(It.IsAny<OauthLoginRequest>()))
+            _gitHubClientMock.Setup(c => c.Oauth.GetGitHubLoginUrl(It.IsAny<OauthLoginRequest>()))
                 .Returns(expectedUrl);
 
             var service = new GitHubService(_gitHubClientMock.Object, _testClientId, _testClientSecret);
@@ -74,7 +73,7 @@ namespace TurboGit.Tests.Services
 
             // Assert
             Assert.Equal(expectedUrl.ToString(), result);
-            _oauthOperationsMock.Verify(o => o.GetGitHubLoginUrl(It.Is<OauthLoginRequest>(r =>
+            _gitHubClientMock.Verify(c => c.Oauth.GetGitHubLoginUrl(It.Is<OauthLoginRequest>(r =>
                 r.ClientId == _testClientId &&
                 r.Scopes.Contains("repo") &&
                 r.Scopes.Contains("user") &&
@@ -89,7 +88,7 @@ namespace TurboGit.Tests.Services
             var customRedirectUri = "http://127.0.0.1:1234/callback/";
             var expectedUrl = new Uri($"https://github.com/login/oauth/authorize?client_id=test-client-id&scope=repo%20user&redirect_uri={Uri.EscapeDataString(customRedirectUri)}");
 
-            _oauthOperationsMock.Setup(o => o.GetGitHubLoginUrl(It.IsAny<OauthLoginRequest>()))
+            _gitHubClientMock.Setup(c => c.Oauth.GetGitHubLoginUrl(It.IsAny<OauthLoginRequest>()))
                 .Returns(expectedUrl);
 
             var service = new GitHubService(_gitHubClientMock.Object, _testClientId, _testClientSecret);
@@ -99,7 +98,7 @@ namespace TurboGit.Tests.Services
 
             // Assert
             Assert.Equal(expectedUrl.ToString(), result);
-            _oauthOperationsMock.Verify(o => o.GetGitHubLoginUrl(It.Is<OauthLoginRequest>(r =>
+            _gitHubClientMock.Verify(c => c.Oauth.GetGitHubLoginUrl(It.Is<OauthLoginRequest>(r =>
                 r.ClientId == _testClientId &&
                 r.Scopes.Contains("repo") &&
                 r.Scopes.Contains("user") &&

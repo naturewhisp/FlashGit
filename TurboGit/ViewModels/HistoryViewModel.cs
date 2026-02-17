@@ -84,9 +84,9 @@ namespace TurboGit.ViewModels
     // A model representing a single Git commit for the view.
     public class GitCommit
     {
-        public string Sha { get; set; }
-        public string Message { get; set; }
-        public string Author { get; set; }
+        public string Sha { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
         public DateTimeOffset CommitDate { get; set; }
     }
 }

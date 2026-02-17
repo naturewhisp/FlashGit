@@ -16,17 +16,17 @@ namespace TurboGit.ViewModels
     public partial class ConflictResolutionViewModel : ObservableObject
     {
         private readonly IAiResolverService _aiResolver;
-        private string _preConflictContent;
-        private string _postConflictContent;
+        private string _preConflictContent = string.Empty;
+        private string _postConflictContent = string.Empty;
         
         [ObservableProperty]
-        private string _filePath;
+        private string _filePath = string.Empty;
 
         [ObservableProperty]
-        private string _currentChanges;
+        private string _currentChanges = string.Empty;
         
         [ObservableProperty]
-        private string _incomingChanges;
+        private string _incomingChanges = string.Empty;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsNotBusy))]
@@ -34,10 +34,10 @@ namespace TurboGit.ViewModels
         
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsResolved))]
-        private string _resolvedContent;
+        private string _resolvedContent = string.Empty;
 
         [ObservableProperty]
-        private string _errorMessage;
+        private string _errorMessage = string.Empty;
 
         public bool IsNotBusy => !IsBusy;
         public bool IsResolved => !string.IsNullOrEmpty(ResolvedContent) && !IsBusy;
@@ -45,7 +45,7 @@ namespace TurboGit.ViewModels
         // In a real app, this would be injected via DI.
         public ConflictResolutionViewModel() : this(new GeminiProResolver(new AiServiceConfig
             {
-                ApiKey = Environment.GetEnvironmentVariable("TURBOGIT_GEMINI_API_KEY")
+                ApiKey = Environment.GetEnvironmentVariable("TURBOGIT_GEMINI_API_KEY") ?? string.Empty
             }))
         {
         }

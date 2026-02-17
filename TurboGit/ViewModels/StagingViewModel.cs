@@ -43,6 +43,8 @@ namespace TurboGit.ViewModels
 
         private async Task RefreshStatus()
         {
+            if (string.IsNullOrEmpty(_currentRepoPath)) return;
+
             UnstagedFiles.Clear();
             StagedFiles.Clear();
 
@@ -73,7 +75,7 @@ namespace TurboGit.ViewModels
         }
 
         // This method is called when the selected file changes.
-        async partial void OnSelectedFileChanged(GitFileStatus value)
+        async partial void OnSelectedFileChanged(GitFileStatus? value)
         {
             if (value == null || string.IsNullOrEmpty(_currentRepoPath))
             {
