@@ -17,17 +17,17 @@ namespace TurboGit.ViewModels
     {
         private readonly IGitService _gitService;
         private readonly IZipExportService _zipExportService;
-        private string _currentRepoPath;
+        private string? _currentRepoPath;
 
         [ObservableProperty]
         private ObservableCollection<GitCommit> _commits;
 
-        public HistoryViewModel(IGitService gitService = null, IZipExportService zipExportService = null)
+        public HistoryViewModel(IGitService? gitService = null, IZipExportService? zipExportService = null)
         {
             // In a real DI scenario, services would be injected.
             _gitService = gitService ?? new GitService();
             _zipExportService = zipExportService ?? new ZipExportService();
-            Commits = new ObservableCollection<GitCommit>();
+            _commits = new ObservableCollection<GitCommit>();
         }
 
         /// <summary>

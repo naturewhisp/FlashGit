@@ -13,7 +13,7 @@ namespace TurboGit.Tests.Services
     public class GitHubServiceTests : IDisposable
     {
         private readonly Mock<IGitHubClient> _gitHubClientMock;
-        private readonly Mock<IOauthOperations> _oauthOperationsMock;
+        private readonly Mock<IOAuthOperations> _oauthOperationsMock;
         private readonly string _testClientId = "test-client-id";
         private readonly string _testClientSecret = "test-client-secret";
         private readonly string? _originalClientId;
@@ -22,7 +22,7 @@ namespace TurboGit.Tests.Services
         public GitHubServiceTests()
         {
             _gitHubClientMock = new Mock<IGitHubClient>();
-            _oauthOperationsMock = new Mock<IOauthOperations>();
+            _oauthOperationsMock = new Mock<IOAuthOperations>();
             _gitHubClientMock.Setup(c => c.Oauth).Returns(_oauthOperationsMock.Object);
 
             _originalClientId = Environment.GetEnvironmentVariable("TURBOGIT_GITHUB_CLIENT_ID");

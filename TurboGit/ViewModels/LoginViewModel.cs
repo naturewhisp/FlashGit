@@ -54,7 +54,7 @@ namespace TurboGit.ViewModels
                     var request = context.Request;
 
                     // The 'code' is the temporary authorization code from GitHub
-                    string code = request.QueryString.Get("code");
+                    string? code = request.QueryString.Get("code");
 
                     // Respond to the browser to close the page
                     var response = context.Response;

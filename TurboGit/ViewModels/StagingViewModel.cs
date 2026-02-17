@@ -11,7 +11,7 @@ namespace TurboGit.ViewModels
     public partial class StagingViewModel : ObservableObject
     {
         private readonly IGitService _gitService;
-        private string _currentRepoPath;
+        private string? _currentRepoPath;
 
         [ObservableProperty]
         private ObservableCollection<GitFileStatus> _unstagedFiles;
@@ -20,16 +20,17 @@ namespace TurboGit.ViewModels
         private ObservableCollection<GitFileStatus> _stagedFiles;
 
         [ObservableProperty]
-        private GitFileStatus _selectedFile;
+        private GitFileStatus? _selectedFile;
 
         [ObservableProperty]
-        private string _diffContent;
+        private string? _diffContent;
 
         public StagingViewModel()
         {
             _gitService = new GitService();
-            UnstagedFiles = new ObservableCollection<GitFileStatus>();
-            StagedFiles = new ObservableCollection<GitFileStatus>();
+            _unstagedFiles = new ObservableCollection<GitFileStatus>();
+            _stagedFiles = new ObservableCollection<GitFileStatus>();
+            _diffContent = string.Empty;
         }
 
         public virtual async Task LoadChanges(string repoPath)

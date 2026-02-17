@@ -48,7 +48,7 @@ namespace TurboGit.Services
         /// <param name="code">The temporary code from the OAuth redirect.</param>
         /// <param name="redirectUri">The optional redirect URI used in the initial request.</param>
         /// <returns>An OAuth access token.</returns>
-        public async Task<OauthToken> GetAccessToken(string code, string? redirectUri = null)
+        public async Task<OauthToken?> GetAccessToken(string code, string? redirectUri = null)
         {
             var request = new OauthTokenRequest(_clientId, _clientSecret, code);
             if (!string.IsNullOrEmpty(redirectUri))
