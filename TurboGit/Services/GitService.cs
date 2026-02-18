@@ -70,6 +70,11 @@ namespace TurboGit.Services
                         var statuses = new List<GitFileStatus>();
                         foreach (var item in repo.RetrieveStatus(new StatusOptions()))
                         {
+                             if (item.State.HasFlag(FileStatus.Ignored))
+                             {
+                                 continue;
+                             }
+
                              bool isStaged = item.State.HasFlag(FileStatus.NewInIndex) ||
                                              item.State.HasFlag(FileStatus.ModifiedInIndex) ||
                                              item.State.HasFlag(FileStatus.DeletedFromIndex) ||

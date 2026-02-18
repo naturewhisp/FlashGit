@@ -171,6 +171,35 @@ namespace TurboGit.Tests
             }
         }
 
+        [Fact]
+        public async Task GetFileStatusAsync_ExcludesIgnoredFiles()
+        {
+            // Arrange
+            // Create a .gitignore file
+            File.WriteAllText(Path.Combine(_tempRepoPath, ".gitignore"), "*.log");
+            
+            // Create an ignored file
+            File.WriteAllText(Path.Combine(_tempRepoPath, "ignored.log"), "this should be ignored");
+            
+            // Create a normal file
+            File.WriteAllText(Path.Combine(_tempRepoPath, "normal.txt"), "this should be seen");
+
+            using (var repo = new Repository(_tempRepoPath))
+            {
+                Commands.Stage(repo, ".gitignore");
+                // We don't stage the other files yet
+            }
+
+            // Act
+            var statuses = await _gitService.GetFileStatusAsync(_tempRepoPath);
+            var statusList = statuses.ToList();
+
+            // Assert
+            Assert.DoesNotContain(statusList, s => s.FilePath == "ignored.log");
+            Assert.Contains(statusList, s => s.FilePath == "normal.txt");
+            Assert.Contains(statusList, s => s.FilePath == ".gitignore");
+        }
+
         private void SetAttributesNormal(string dirPath)
         {
             foreach (string subDir in Directory.GetDirectories(dirPath))
