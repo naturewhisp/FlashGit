@@ -41,8 +41,9 @@ namespace TurboGit.ViewModels
         {
             try
             {
-                int port = GetFreePort();
-                string redirectUri = $"http://127.0.0.1:{port}/callback/";
+                // Usa la porta fissa definita in Constants
+                const int port = 8989;
+                string redirectUri = $"http://localhost:{port}/callback/";
 
                 using (var listener = new HttpListener())
                 {
