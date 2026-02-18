@@ -83,8 +83,16 @@ namespace TurboGit.ViewModels
             HistoryViewModel = new HistoryViewModel();
             StagingViewModel = new StagingViewModel();
 
-            // Load repositories asynchronously
             _ = LoadRepositoriesAsync();
+        }
+
+        [ObservableProperty]
+        private bool _isDashboardActive = true;
+
+        [RelayCommand]
+        private void GoToDashboard()
+        {
+            SelectedRepository = null;
         }
 
         [RelayCommand]
@@ -119,17 +127,12 @@ namespace TurboGit.ViewModels
             {
                 var repos = (await _repositoryService.GetRepositoriesAsync()).ToList();
 
-                if (!repos.Any())
+                // Remove legacy "Home Directory" if present
+                var homeDir = repos.FirstOrDefault(r => r.Name == "Home Directory");
+                if (homeDir != null)
                 {
-                    // If no repositories are saved, add the home directory as a default.
-                    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                    var defaultRepo = new LocalRepository { Name = "Home Directory", Path = userProfile };
-
-                    // Add to service (persist)
-                    await _repositoryService.AddRepositoryAsync(defaultRepo);
-
-                    // Add to local list directly to avoid re-fetching
-                    repos.Add(defaultRepo);
+                   await _repositoryService.RemoveRepositoryAsync(homeDir);
+                   repos.Remove(homeDir);
                 }
 
                 RepositoryList?.Clear();
@@ -148,28 +151,31 @@ namespace TurboGit.ViewModels
         // This method would be called when the selection changes in the UI.
         async partial void OnSelectedRepositoryChanged(LocalRepository? value)
         {
-            // When a repository is selected, we notify the child ViewModels
-            // to load the data for that specific repository.
-            // This is a crucial step for the application's reactivity.
-            if (value != null)
+            if (value == null)
             {
-                try
-                {
-                    if (HistoryViewModel == null || StagingViewModel == null)
-                        return;
+                IsDashboardActive = true;
+                return;
+            }
 
-                    // Await the async loading tasks to ensure they complete and handle exceptions.
-                    // Load both History and Staging concurrently for better performance.
-                    var loadHistoryTask = HistoryViewModel.LoadCommits(value.Path);
-                    var loadChangesTask = StagingViewModel.LoadChanges(value.Path);
+            IsDashboardActive = false;
+            try
+            {
+                if (HistoryViewModel == null || StagingViewModel == null)
+                    return;
 
-                    await Task.WhenAll(loadHistoryTask, loadChangesTask);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error loading repository: {ex.Message}");
-                }
+                // Await the async loading tasks to ensure they complete and handle exceptions.
+                // Load both History and Staging concurrently for better performance.
+                var loadHistoryTask = HistoryViewModel.LoadCommits(value.Path);
+                var loadChangesTask = StagingViewModel.LoadChanges(value.Path);
+
+                await Task.WhenAll(loadHistoryTask, loadChangesTask);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading repository: {ex.Message}");
             }
         }
+
+
     }
 }

@@ -18,6 +18,22 @@
             <!-- Sidebar per la lista dei repository -->
             <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="0,0,1,0">
                 <DockPanel>
+                    <!-- Dashboard Button -->
+                    <Grid DockPanel.Dock="Top" Margin="0,10,0,0">
+                         <Button Content="Dashboard" 
+                                 Command="{Binding GoToDashboardCommand}" 
+                                 HorizontalAlignment="Stretch" Margin="10,0"
+                                 Classes.active="{Binding IsDashboardActive}">
+                             <Button.Styles>
+                                 <Style Selector="Button.active">
+                                     <Setter Property="Background" Value="#444444"/>
+                                     <Setter Property="Foreground" Value="White"/>
+                                     <Setter Property="FontWeight" Value="Bold"/>
+                                 </Style>
+                             </Button.Styles>
+                         </Button>
+                    </Grid>
+
                     <TextBlock Text="REPOSITORIES" FontSize="12" FontWeight="Bold" Margin="10" DockPanel.Dock="Top"/>
                     <Button Content="Add Repository" Command="{Binding AddRepositoryCommand}" HorizontalAlignment="Stretch" Margin="10" DockPanel.Dock="Bottom"/>
                     <ListBox ItemsSource="{Binding RepositoryList}" SelectedItem="{Binding SelectedRepository}">
@@ -31,14 +47,25 @@
             </Border>
 
             <!-- Main Content Area -->
-            <TabControl Grid.Column="1">
-                <TabItem Header="History">
-                    <views:HistoryView DataContext="{Binding HistoryViewModel}"/>
-                </TabItem>
-                <TabItem Header="Changes">
-                    <views:ChangesView DataContext="{Binding StagingViewModel}"/>
-                </TabItem>
-            </TabControl>
+            <Grid Grid.Column="1">
+                <!-- Welcome View (Dashboard) -->
+                <Grid IsVisible="{Binding IsDashboardActive}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel Spacing="20">
+                        <TextBlock Text="Welcome to TurboGit" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Select a repository from the sidebar to start." FontSize="16" Foreground="#888888" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Repository Tabs -->
+                <TabControl IsVisible="{Binding !IsDashboardActive}">
+                    <TabItem Header="History">
+                        <views:HistoryView DataContext="{Binding HistoryViewModel}"/>
+                    </TabItem>
+                    <TabItem Header="Changes">
+                        <views:ChangesView DataContext="{Binding StagingViewModel}"/>
+                    </TabItem>
+                </TabControl>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
