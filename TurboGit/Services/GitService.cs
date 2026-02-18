@@ -314,6 +314,7 @@ namespace TurboGit.Services
                 {
                     currentHunk = new DiffHunk
                     {
+                        Index = model.Hunks.Count,
                         Header = line,
                         OldStart = int.Parse(match.Groups[1].Value),
                         OldCount = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1,

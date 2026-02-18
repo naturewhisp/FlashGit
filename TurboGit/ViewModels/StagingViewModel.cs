@@ -28,6 +28,9 @@ namespace TurboGit.ViewModels
         private GitFileStatus? _selectedUnstagedFile;
 
         [ObservableProperty]
+        private ObservableCollection<DiffHunk> _diffHunks = new();
+
+        [ObservableProperty]
         private GitFileStatus? _selectedStagedFile;
 
         // The "active" file driving the diff view
@@ -101,6 +104,7 @@ namespace TurboGit.ViewModels
             {
                 DiffContent = string.Empty;
                 DiffLines = new ObservableCollection<DiffLine>();
+                DiffHunks = new ObservableCollection<DiffHunk>();
                 _currentDiffModel = null;
                 IsSelectedFileStaged = false;
                 IsSelectedFileUnstaged = false;
@@ -134,19 +138,7 @@ namespace TurboGit.ViewModels
             if (SelectedFile == null || _currentDiffModel == null || selectedItems == null || selectedItems.Count == 0) return;
             var lines = selectedItems.OfType<DiffLine>().Where(l => l.Type != DiffLineType.Context).ToList();
             if (lines.Count == 0) return;
-            var filePath = SelectedFile.FilePath;
-            await _gitService.StageLinesAsync(_currentRepoPath, filePath, lines, _currentDiffModel.Hunks);
-            await RefreshStatus();
-            // Re-select the same file (as unstaged, since we just staged some lines — more may remain)
-            var reselected = UnstagedFiles.FirstOrDefault(f => f.FilePath == filePath)
-                          ?? StagedFiles.FirstOrDefault(f => f.FilePath == filePath);
-            if (reselected != null)
-            {
-                if (!reselected.IsStaged)
-                    SelectedUnstagedFile = reselected;
-                else
-                    SelectedStagedFile = reselected;
-            }
+            await StageLinesInternal(lines);
         }
 
         [RelayCommand]
@@ -155,25 +147,75 @@ namespace TurboGit.ViewModels
             if (SelectedFile == null || _currentDiffModel == null || selectedItems == null || selectedItems.Count == 0) return;
             var lines = selectedItems.OfType<DiffLine>().Where(l => l.Type != DiffLineType.Context).ToList();
             if (lines.Count == 0) return;
+            await UnstageLinesInternal(lines);
+        }
+
+        [RelayCommand]
+        private async Task StageHunk(DiffHunk hunk)
+        {
+             if (SelectedFile == null || _currentDiffModel == null || hunk == null) return;
+             // Stage all non-context lines in the hunk
+             var lines = hunk.Lines.Where(l => l.Type != DiffLineType.Context).ToList();
+             if (lines.Count == 0) return;
+             await StageLinesInternal(lines);
+        }
+
+        [RelayCommand]
+        private async Task UnstageHunk(DiffHunk hunk)
+        {
+             if (SelectedFile == null || _currentDiffModel == null || hunk == null) return;
+             // Unstage all non-context lines in the hunk
+             var lines = hunk.Lines.Where(l => l.Type != DiffLineType.Context).ToList();
+             if (lines.Count == 0) return;
+             await UnstageLinesInternal(lines);
+        }
+
+        private async Task StageLinesInternal(List<DiffLine> lines)
+        {
+            if (SelectedFile == null || _currentDiffModel == null) return;
+            var filePath = SelectedFile.FilePath;
+            await _gitService.StageLinesAsync(_currentRepoPath, filePath, lines, _currentDiffModel.Hunks);
+            await RefreshStatus();
+            ReselectFile(filePath, isStagedOperation: true);
+        }
+
+        private async Task UnstageLinesInternal(List<DiffLine> lines)
+        {
+            if (SelectedFile == null || _currentDiffModel == null) return;
             var filePath = SelectedFile.FilePath;
             await _gitService.UnstageLinesAsync(_currentRepoPath, filePath, lines, _currentDiffModel.Hunks);
             await RefreshStatus();
-            // Re-select the same file (as staged, since we just unstaged some lines — more may remain)
-            var reselected = StagedFiles.FirstOrDefault(f => f.FilePath == filePath)
-                          ?? UnstagedFiles.FirstOrDefault(f => f.FilePath == filePath);
-            if (reselected != null)
-            {
-                if (reselected.IsStaged)
-                    SelectedStagedFile = reselected;
-                else
-                    SelectedUnstagedFile = reselected;
-            }
+            ReselectFile(filePath, isStagedOperation: false);
+        }
+
+        private void ReselectFile(string filePath, bool isStagedOperation)
+        {
+             // Try to find the file in either list. 
+             // If we just stared lines, prefer unstaged list if it's still there (partial), 
+             // otherwise staged list. vice versa for unstaged.
+             
+             var inUnstaged = UnstagedFiles.FirstOrDefault(f => f.FilePath == filePath);
+             var inStaged = StagedFiles.FirstOrDefault(f => f.FilePath == filePath);
+
+             if (isStagedOperation)
+             {
+                 // We moved things to stage. If partially staged, keep selecting unstaged to allow more staging.
+                 if (inUnstaged != null) SelectedUnstagedFile = inUnstaged;
+                 else if (inStaged != null) SelectedStagedFile = inStaged;
+             }
+             else
+             {
+                 // We moved things to unstage. If partially staged, keep selecting staged to allow more unstaging.
+                 if (inStaged != null) SelectedStagedFile = inStaged;
+                 else if (inUnstaged != null) SelectedUnstagedFile = inUnstaged;
+             }
         }
 
         private async Task LoadDiffForFile(GitFileStatus file)
         {
             _currentDiffModel = await _gitService.GetFileDiffModelAsync(_currentRepoPath, file.FilePath, file.IsStaged);
             DiffLines = new ObservableCollection<DiffLine>(_currentDiffModel.AllLines());
+            DiffHunks = new ObservableCollection<DiffHunk>(_currentDiffModel.Hunks);
         }
     }
 }

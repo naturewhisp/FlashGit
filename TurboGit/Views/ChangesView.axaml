@@ -63,39 +63,73 @@
         <Grid Grid.Column="1" RowDefinitions="*,Auto">
 
             <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" CornerRadius="4">
-                <ListBox x:Name="DiffListBox"
-                         ItemsSource="{Binding DiffLines}"
-                         SelectionMode="Multiple"
-                         Background="Transparent"
-                         ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                    <ListBox.Styles>
-                        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                            <Setter Property="Background" Value="#44AAAAFF"/>
-                        </Style>
-                    </ListBox.Styles>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="models:DiffLine">
-                            <Grid ColumnDefinitions="40,*"
-                                  Background="{Binding Type, Converter={StaticResource DiffLineColorConverter}}">
-                                <!-- Line number gutter -->
-                                <TextBlock Grid.Column="0"
-                                           Text="{Binding NewLineNumber}"
-                                           Foreground="#888888"
-                                           FontFamily="Consolas,monospace"
-                                           FontSize="12"
-                                           Padding="4,0"
-                                           VerticalAlignment="Center"/>
-                                <!-- Line content -->
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding Content}"
-                                           FontFamily="Consolas,monospace"
-                                           FontSize="12"
-                                           TextWrapping="NoWrap"
-                                           Padding="4,1"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="DiffItemsControl" ItemsSource="{Binding DiffHunks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#444444" BorderThickness="0,0,0,1" Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <!-- Hunk Header -->
+                                        <Grid ColumnDefinitions="*,Auto" Background="#222222" x:Name="HunkHeaderGrid">
+                                            <TextBlock Text="{Binding Header}" 
+                                                       Foreground="#AAAAAA" 
+                                                       FontFamily="Consolas,monospace" 
+                                                       FontSize="11" 
+                                                       Padding="4,2"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                 <Button Content="Stage Hunk" 
+                                                         Command="{Binding $parent[UserControl].DataContext.StageHunkCommand}"
+                                                         CommandParameter="{Binding}"
+                                                         IsVisible="{Binding $parent[UserControl].DataContext.IsSelectedFileUnstaged}"
+                                                         FontSize="10" Padding="4,1" Margin="4,0"/>
+                                                 <Button Content="Unstage Hunk" 
+                                                         Command="{Binding $parent[UserControl].DataContext.UnstageHunkCommand}"
+                                                         CommandParameter="{Binding}"
+                                                         IsVisible="{Binding $parent[UserControl].DataContext.IsSelectedFileStaged}"
+                                                         FontSize="10" Padding="4,1" Margin="4,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        
+                                        <!-- Lines in this hunk -->
+                                        <ListBox ItemsSource="{Binding Lines}"
+                                                 SelectionMode="Multiple"
+                                                 Background="Transparent"
+                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                            <ListBox.Styles>
+                                                <Style Selector="ListBoxItem">
+                                                    <Setter Property="Padding" Value="0"/>
+                                                </Style>
+                                                <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                                    <Setter Property="Background" Value="#44AAAAFF"/>
+                                                </Style>
+                                            </ListBox.Styles>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="models:DiffLine">
+                                                    <Grid ColumnDefinitions="40,*"
+                                                          Background="{Binding Type, Converter={StaticResource DiffLineColorConverter}}">
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding NewLineNumber}"
+                                                                   Foreground="#888888"
+                                                                   FontFamily="Consolas,monospace"
+                                                                   FontSize="12"
+                                                                   Padding="4,0"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Content}"
+                                                                   FontFamily="Consolas,monospace"
+                                                                   FontSize="12"
+                                                                   TextWrapping="NoWrap"
+                                                                   Padding="4,1"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Border>
 
             <!-- Action buttons for partial staging -->

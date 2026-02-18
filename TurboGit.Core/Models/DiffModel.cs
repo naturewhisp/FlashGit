@@ -22,6 +22,7 @@ namespace TurboGit.Core.Models
 
     public class DiffHunk
     {
+        public int Index { get; set; }
         public string Header { get; set; } = string.Empty;
         public int OldStart { get; set; }
         public int OldCount { get; set; }

@@ -1,8 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
+using Avalonia.VisualTree;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using System.Linq;
+using System.Collections.Generic;
 using TurboGit.ViewModels;
+using Avalonia.Markup.Xaml;
 
 namespace TurboGit.Views
 {
@@ -23,27 +24,41 @@ namespace TurboGit.Views
         {
             var stageBtn = this.FindControl<Button>("StageSelectedBtn");
             var unstageBtn = this.FindControl<Button>("UnstageSelectedBtn");
-            var diffListBox = this.FindControl<ListBox>("DiffListBox");
+            var diffItemsControl = this.FindControl<ItemsControl>("DiffItemsControl");
 
-            if (stageBtn != null && diffListBox != null)
+            if (stageBtn != null)
             {
                 stageBtn.Click += async (_, _) =>
                 {
-                    if (DataContext is StagingViewModel vm)
+                    if (DataContext is StagingViewModel vm && diffItemsControl != null)
                     {
-                        var selected = diffListBox.SelectedItems?.Cast<object>().ToList() ?? new List<object>();
+                        var selected = new List<object>();
+                        foreach (var listBox in diffItemsControl.GetVisualDescendants().OfType<ListBox>())
+                        {
+                            if (listBox.SelectedItems != null)
+                            {
+                                selected.AddRange(listBox.SelectedItems.Cast<object>());
+                            }
+                        }
                         await vm.StageSelectedLinesCommand.ExecuteAsync(selected);
                     }
                 };
             }
 
-            if (unstageBtn != null && diffListBox != null)
+            if (unstageBtn != null)
             {
                 unstageBtn.Click += async (_, _) =>
                 {
-                    if (DataContext is StagingViewModel vm)
+                    if (DataContext is StagingViewModel vm && diffItemsControl != null)
                     {
-                        var selected = diffListBox.SelectedItems?.Cast<object>().ToList() ?? new List<object>();
+                        var selected = new List<object>();
+                        foreach (var listBox in diffItemsControl.GetVisualDescendants().OfType<ListBox>())
+                        {
+                             if (listBox.SelectedItems != null)
+                             {
+                                 selected.AddRange(listBox.SelectedItems.Cast<object>());
+                             }
+                        }
                         await vm.UnstageSelectedLinesCommand.ExecuteAsync(selected);
                     }
                 };
