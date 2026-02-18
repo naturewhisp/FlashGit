@@ -9,5 +9,8 @@
 
     <Application.Styles>
         <FluentTheme />
+        <Style Selector="TabItem">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
     </Application.Styles>
 </Application>

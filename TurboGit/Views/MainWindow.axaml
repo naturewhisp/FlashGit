@@ -12,7 +12,7 @@
     </Design.DataContext>
 
     <Grid>
-        <views:LoginView DataContext="{Binding LoginViewModel}" IsVisible="{Binding !IsLoggedIn}" />
+        <views:LoginView DataContext="{Binding LoginViewModel}" IsVisible="{Binding IsNotLoggedIn}" />
 
         <Grid ColumnDefinitions="250,*" IsVisible="{Binding IsLoggedIn}">
             <!-- Sidebar per la lista dei repository -->
