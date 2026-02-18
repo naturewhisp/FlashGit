@@ -50,7 +50,7 @@ namespace TurboGit.Controls
             // Pens and Brushes for drawing the graph.
             var pen = new Pen(Brushes.Gray, 1);
             var dotFill = Brushes.DodgerBlue;
-            var textBrush = Brushes.Black; // This should be theme-aware in a real app.
+            var textBrush = Brushes.White; // This should be theme-aware in a real app.
 
             // This is the virtualization part: we only iterate over items
             // that are currently visible within the control's bounds.

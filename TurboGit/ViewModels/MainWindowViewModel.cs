@@ -34,7 +34,10 @@ namespace TurboGit.ViewModels
         private StagingViewModel? _stagingViewModel;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsNotLoggedIn))]
         private bool _isLoggedIn;
+
+        public bool IsNotLoggedIn => !IsLoggedIn;
 
         [ObservableProperty]
         private LoginViewModel? _loginViewModel;
